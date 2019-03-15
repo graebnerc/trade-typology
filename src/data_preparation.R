@@ -15,7 +15,8 @@ countries_considered <- strsplit(
 nat_res_rents_file_name <- "data/wb_nat_resource_rents.csv"
 if (update_data){
   nat_res_rents_raw <- as.data.table(WDI::WDI(country = countries_considered, 
-                   indicator = "ny.gdp.totl.rt.zs"))
+                                              indicator = "ny.gdp.totl.rt.zs", 
+                                              start = 1962, end = 2016))
   data.table::fwrite(nat_res_rents_raw, nat_res_rents_file_name)
 } else {# TODO Test whether file exists
   nat_res_rents_raw <- data.table::fread(nat_res_rents_file_name)
@@ -31,7 +32,8 @@ nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
 exp_to_gdp_file_name <- "data/wb_exp_to_gdp.csv"
 if (update_data){
   exp_to_gdp_raw <- as.data.table(WDI::WDI(country = countries_considered, 
-                                              indicator = "ne.trd.gnfs.zs"))
+                                           indicator = "ne.trd.gnfs.zs", 
+                                           start = 1962, end = 2016))
   data.table::fwrite(exp_to_gdp_raw, exp_to_gdp_file_name)
 } else {# TODO Test whether file exists
   exp_to_gdp_raw <- data.table::fread(exp_to_gdp_file_name)
