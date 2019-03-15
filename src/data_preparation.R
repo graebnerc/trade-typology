@@ -1,0 +1,27 @@
+# 15.03.2019: Create new data for endownment dimension
+rm(list = ls())
+library(data.table)
+library(WDI)
+update_data <- T
+
+countries_considered <- strsplit(
+  "LU, SE, FI, DK, FR, NL, BE, SI, DE, AT, LV, EE, SK, CZ, PL, HU, GB, IE, PT, GR, ES, IT", 
+  ", ")[[1]]
+
+# World Bank data on natural resource rents====================================
+wb_file_name <- "data/wb_nat_resource_rents.csv"
+if (update_data){
+  nat_res_rents_raw <- as.data.table(WDI::WDI(country = countries_considered, 
+                   indicator = "ny.gdp.totl.rt.zs"))
+  data.table::fwrite(nat_res_rents_raw, wb_file_name)
+} else {# TODO Test whether file exists
+  data.table::fread(wb_file_name)
+}
+
+nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
+                                   ][, .(iso2c, year,res_rents)]
+
+# Exports to GDP===============================================================
+# Coals, Metal and Oil shares of total exports=================================
+# Share of primary exports=====================================================
+# Merging data=================================================================
