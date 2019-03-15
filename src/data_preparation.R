@@ -79,6 +79,12 @@ oil_exports <- unique(oil_exports[!is.na(oil_exports_share)
                            ][, .(year, location_code, oil_exports_share)])
 head(oil_exports)
 
+test_oil_exports <- copy(export_data_raw)
+test_oil_exports <- test_oil_exports %>%
+  dplyr::filter(location_code=="AUT" & year==1989) %>%
+  dplyr::mutate(sitc2=substr(sitc_product_code, 1, 2)) %>%
+  dplyr::filter(sitc2 %in% oil_codes) %>%
+  dplyr::mutate(oil_exp_share=sum(export_value, na.rm = T)/total_exports)
 # Coal and metal share of total exports========================================
 
 # For SITC codes see: 
@@ -113,6 +119,13 @@ coal_metal_shares[coal_metal==TRUE,
 coal_metal_shares <- unique(coal_metal_shares[!is.na(coal_metal_export_share), 
                                               .(year, location_code, coal_metal_export_share)])
 head(coal_metal_shares)
+test_coal_metal_shares <- copy(export_data_raw)
+test_coal_metal_shares <- test_coal_metal_shares %>%
+  dplyr::filter(location_code=="AUT" & year==1988) %>%
+  dplyr::mutate(sitc2=substr(sitc_product_code, 1, 2),
+                sitc4=substr(sitc_product_code, 1, 4)) %>%
+  dplyr::filter(sitc2 %in% coal_and_metal_codes_2 | sitc4 %in% coal_and_metal_codes_4) %>%
+  dplyr::mutate(coal_exp_share=sum(export_value, na.rm = T)/total_exports)
 
 # Share of primary exports=====================================================
 
@@ -141,7 +154,12 @@ primary_exports_data <-  unique(
                        .(year, location_code, primary_exports_share_1, primary_exports_share_2)]
   )
 head(primary_exports_data)
-
+test_primary_goods_shares <- copy(export_data_raw)
+test_primary_goods_shares <- test_primary_goods_shares %>%
+  dplyr::filter(location_code=="AUT" & year==1988) %>%
+  dplyr::mutate(sitc1=substr(sitc_product_code, 1, 1)) %>%
+  dplyr::filter(sitc1 %in% primary_goods_codes_2) %>%
+  dplyr::mutate(primary_exp_share=sum(export_value, na.rm = T)/total_exports)
 # Merging data=================================================================
 head(nat_res_rents)
 head(exp_to_gdp)
