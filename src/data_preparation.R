@@ -22,6 +22,19 @@ nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
                                    ][, .(iso2c, year,res_rents)]
 
 # Exports to GDP===============================================================
+# https://data.worldbank.org/indicator/ne.trd.gnfs.zs
+exp_to_gdp_file_name <- "data/wb_exp_to_gdp.csv"
+if (update_data){
+  exp_to_gdp_raw <- as.data.table(WDI::WDI(country = countries_considered, 
+                                              indicator = "ne.trd.gnfs.zs"))
+  data.table::fwrite(exp_to_gdp_raw, exp_to_gdp_file_name)
+} else {# TODO Test whether file exists
+  exp_to_gdp_raw <- data.table::fread(exp_to_gdp_file_name)
+}
+
+exp_to_gdp <- exp_to_gdp_raw[, exp_to_gdp:=ne.trd.gnfs.zs
+                             ][, .(iso2c, year, exp_to_gdp)]
+
 # Coals, Metal and Oil shares of total exports=================================
 # Share of primary exports=====================================================
 # Merging data=================================================================
