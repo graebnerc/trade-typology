@@ -11,6 +11,7 @@ countries_considered <- strsplit(
 
 # World Bank data on natural resource rents====================================
 # https://data.worldbank.org/indicator/ny.gdp.totl.rt.zs
+
 nat_res_rents_file_name <- "data/wb_nat_resource_rents.csv"
 if (update_data){
   nat_res_rents_raw <- as.data.table(WDI::WDI(country = countries_considered, 
@@ -25,6 +26,7 @@ nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
 
 # Exports to GDP===============================================================
 # https://data.worldbank.org/indicator/ne.trd.gnfs.zs
+
 exp_to_gdp_file_name <- "data/wb_exp_to_gdp.csv"
 if (update_data){
   exp_to_gdp_raw <- as.data.table(WDI::WDI(country = countries_considered, 
@@ -37,26 +39,8 @@ if (update_data){
 exp_to_gdp <- exp_to_gdp_raw[, exp_to_gdp:=ne.trd.gnfs.zs
                              ][, .(iso2c, year, exp_to_gdp)]
 
-# Coals, Metal and Oil shares of total exports=================================
-# For SITC codes see: 
-# https://unstats.un.org/unsd/tradekb/Knowledgebase/50262/Search-SITC-code-description
-oil_codes <- c("33", "34") # 33	Petroleum, petroleum products and related materials and 34	Gas, natural and manufactured
-coal_and_metal_codes_2 <- c("32", "35", "28", "68", "97")
-# 32	Coal, coke and briquettes
-# 35	Electric current
-# 28	Metalliferous ores and metal scrap
-# 68	Non-ferrous metals
-# 97	Gold, non-monetary (excluding gold ores and concentrates)
-coal_and_metal_codes_4 <- c("5224", "5231", "5232", "5233")
-# 5224	Metallic oxides of zinc, iron, lead, chromium etc
-# 5231	Metallic salts and peroxysalts of inorganic acids
-# 5232	Metallic salts and peroxysalts of inorganic acids
-# 5233	Salts of metallic acids; compounds of precious metals
-coal_and_metal_codes_5 <- c("52217")
-# 52217 Alkali and alkaline-earth metals; rare earth metals
-# Eher nicht:
-# 69	Manufactures of metals, nes
-# 691	Structures and parts, nes, of iron, steel or aluminium
+# Get export data==============================================================
+# http://atlas.cid.harvard.edu/downloads
 
 export_data_file_name <- "data/hrvd_complexity_atlas.csv.gz"
 if (update_data){
@@ -74,6 +58,34 @@ if (update_data){
 export_data <- export_data_raw[, 
                                total_exports:=sum(export_value, na.rm = T), 
                                .(location_code, year)]
+
+# Coals, Metal and Oil shares of total exports=================================
+
+# For SITC codes see: 
+# https://unstats.un.org/unsd/tradekb/Knowledgebase/50262/Search-SITC-code-description
+oil_codes <- c("33", "34") 
+# 33	Petroleum, petroleum products and related materials 
+# 34	Gas, natural and manufactured
+
+coal_and_metal_codes_2 <- c("32", "35", "28", "68", "97")
+# 32	Coal, coke and briquettes
+# 35	Electric current
+# 28	Metalliferous ores and metal scrap
+# 68	Non-ferrous metals
+# 97	Gold, non-monetary (excluding gold ores and concentrates)
+
+coal_and_metal_codes_4 <- c("5224", "5231", "5232", "5233")
+# 5224	Metallic oxides of zinc, iron, lead, chromium etc
+# 5231	Metallic salts and peroxysalts of inorganic acids
+# 5232	Metallic salts and peroxysalts of inorganic acids
+# 5233	Salts of metallic acids; compounds of precious metals
+
+coal_and_metal_codes_5 <- c("52217")
+# 52217 Alkali and alkaline-earth metals; rare earth metals
+# Eher nicht:
+# 69	Manufactures of metals, nes
+# 691	Structures and parts, nes, of iron, steel or aluminium
+
 
 # Share of primary exports=====================================================
 
