@@ -59,7 +59,7 @@ export_data <- export_data_raw[,
                                total_exports:=sum(export_value, na.rm = T), 
                                .(location_code, year)]
 
-# Coals, Metal and Oil shares of total exports=================================
+# Oil shares of total exports=================================
 
 # For SITC codes see: 
 # https://unstats.un.org/unsd/tradekb/Knowledgebase/50262/Search-SITC-code-description
@@ -74,6 +74,20 @@ coal_and_metal_codes_2 <- c("32", "35", "28", "68", "97")
 # 68	Non-ferrous metals
 # 97	Gold, non-monetary (excluding gold ores and concentrates)
 
+oil_exports <- export_data[, sitc_red:=substr(sitc_product_code, 1, 2)
+                           ][sitc_red%in%oil_codes, 
+                             oil_export:=sum(export_value, na.rm = T), 
+                             .(year, location_code)
+                             ][, oil_exports_share:=oil_export/total_exports
+                               ][!is.na(oil_exports_share)
+                                 ][, .(year, location_code, oil_exports_share)]
+oil_exports <- unique(oil_exports)
+head(oil_exports)
+
+# Coal and metal share of total exports========================================
+
+# For SITC codes see: 
+# https://unstats.un.org/unsd/tradekb/Knowledgebase/50262/Search-SITC-code-description
 coal_and_metal_codes_4 <- c("5224", "5231", "5232", "5233")
 # 5224	Metallic oxides of zinc, iron, lead, chromium etc
 # 5231	Metallic salts and peroxysalts of inorganic acids
@@ -98,14 +112,16 @@ primary_goods_codes_2 <- c(primary_goods_codes_1, "3")
 # 4	Animal and vegetable oils, fats and waxes
 # Unklar:
 # 3	Mineral fuels, lubricants and related materials
-
+# TODO das stimmt noch nicht: nicht die subsets genommen, und gibt summe>100
 primary_exports_data <- export_data[, sitc_main:=substr(sitc_product_code, 1, 1)
                                     ][, export_primary:=sum(export_value, na.rm = T), 
                                       .(year, location_code, sitc_main)
                                       ][, primary_exports_share:=export_primary/total_exports]
 primary_exports_data <-  primary_exports_data[, 
                                               .(year, location_code, primary_exports_share)]
+
 # Merging data=================================================================
 nat_res_rents
 exp_to_gdp
 primary_exports_data
+oil_exports
