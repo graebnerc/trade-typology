@@ -3,7 +3,7 @@ rm(list = ls())
 library(countrycode)
 library(data.table)
 library(WDI)
-update_data <- F
+update_data <- T
 
 countries_considered <- strsplit(
   "LU, SE, FI, DK, FR, NL, BE, SI, DE, AT, LV, EE, SK, CZ, PL, HU, GB, IE, PT, GR, ES, IT", 
