@@ -9,13 +9,14 @@ countries_considered <- strsplit(
   ", ")[[1]]
 
 # World Bank data on natural resource rents====================================
-wb_file_name <- "data/wb_nat_resource_rents.csv"
+# https://data.worldbank.org/indicator/ny.gdp.totl.rt.zs
+nat_res_rents_file_name <- "data/wb_nat_resource_rents.csv"
 if (update_data){
   nat_res_rents_raw <- as.data.table(WDI::WDI(country = countries_considered, 
                    indicator = "ny.gdp.totl.rt.zs"))
-  data.table::fwrite(nat_res_rents_raw, wb_file_name)
+  data.table::fwrite(nat_res_rents_raw, nat_res_rents_file_name)
 } else {# TODO Test whether file exists
-  data.table::fread(wb_file_name)
+  nat_res_rents_raw <- data.table::fread(nat_res_rents_file_name)
 }
 
 nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
