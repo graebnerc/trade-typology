@@ -47,13 +47,10 @@ exp_to_gdp <- exp_to_gdp_raw[, exp_to_gdp:=ne.trd.gnfs.zs
 # https://atlas.media.mit.edu/en/resources/data/
 export_data_mit_file_name <- "data/mit_export_data.fst"
 if (update_data){
-  # TODO Implement download of data
-  web_link <- "https://atlas.media.mit.edu/static/db/raw/year_origin_sitc_rev2.tsv.bz2"
+  web_link_mit <- "https://atlas.media.mit.edu/static/db/raw/year_origin_sitc_rev2.tsv.bz2"
   web_link_countries <- "https://atlas.media.mit.edu/static/db/raw/country_names.tsv.bz2"
-  export_data_file_name_web <- "data/year_origin_sitc_rev2.tsv.bz2"
-  country_file_web <- "data/country_names.tsv.bz2"
-  mit_country_names <- as.data.frame(fread(country_file_web))
-  export_data_mit_raw <- fread(export_data_file_name_web,
+  mit_country_names <- as.data.frame(fread(web_link_countries))
+  export_data_mit_raw <- fread(web_link_mit,
                                colClasses = c("double", rep("character", 2), rep("double", 4)),
                                select = c("year", "origin", "sitc", "export_val"))
   export_data_mit_raw[, origin:=countrycode(origin, "id_3char", "name", 
