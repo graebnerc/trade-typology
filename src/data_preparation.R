@@ -52,28 +52,26 @@ if (update_data){
   export_data_mit_raw <- fread(export_data_file_name_web,
                                colClasses = c("double", rep("character", 2), rep("double", 4)),
                                select = c("year", "origin", "sitc", "export_val"))
-  fst::write.fst(export_data_mit_file_name, export_data_file_name_new, compress = 100)
+  fst::write.fst(x = export_data_mit_raw, path = export_data_mit_file_name, compress = 100)
 } else{
-  export_data_mit_raw <- fst::read.fst(export_data_mit_file_name)
+  export_data_mit_raw <- fst::read.fst(export_data_mit_file_name, as.data.table = T)
 }
 
 
 # Get export data from Harvard=================================================
 # http://atlas.cid.harvard.edu/downloads
 
-export_data_file_name <- "data/hrvd_complexity_atlas.csv.gz"
+export_data_file_name <- "data/hrvd_complexity_atlas.fst"
 if (update_data){
   web_link <- "https://intl-atlas-downloads.s3.amazonaws.com/country_sitcproduct4digit_year.csv.zip"
   export_data_raw <- fread(cmd = paste0("curl ", web_link, " | funzip"),
                            colClasses = c(rep("double", 11), rep("character", 4)), 
                            select = c("year", "export_value", "location_code", "sitc_product_code"))
   export_data_raw <- export_data_raw[location_code%in%countrycode(countries_considered, "iso2c", "iso3c")]
-  readr::write_csv(export_data_raw, gzfile(export_data_file_name))
+  fst::write.fst(x = export_data_raw, path = export_data_file_name, compress = 100)
 } else{
-  export_data_raw <- fread(export_data_file_name, 
-                           colClasses = c(rep("double", 2), rep("character", 2)))
+  export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T) #colClasses = c(rep("double", 2), rep("character", 2)))
 }
-
 export_data_raw[, total_exports:=sum(export_value, na.rm = T), 
                 .(location_code, year)]
 
