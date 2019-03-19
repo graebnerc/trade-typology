@@ -3,7 +3,7 @@ rm(list = ls())
 library(countrycode)
 library(data.table)
 library(WDI)
-update_data <- T
+update_data <- F
 
 countries_considered <- strsplit(
   "LU, SE, FI, DK, FR, NL, BE, SI, DE, AT, LV, EE, SK, CZ, PL, HU, GB, IE, PT, GR, ES, IT", 
@@ -43,7 +43,22 @@ exp_to_gdp <- exp_to_gdp_raw[, exp_to_gdp:=ne.trd.gnfs.zs
                              ][, iso2c:=countrycode(iso2c, "iso2c", "iso3c")
                                ][, .(iso2c, year, exp_to_gdp)]
 
-# Get export data==============================================================
+# Get export data from MIT=====================================================
+# https://atlas.media.mit.edu/en/resources/data/
+export_data_mit_file_name <- "data/mit_export_data.fst"
+if (update_data){
+  web_link <- "https://atlas.media.mit.edu/static/db/raw/year_origin_sitc_rev2.tsv.bz2"
+  export_data_file_name_web <- "data/year_origin_sitc_rev2.tsv.bz2"
+  export_data_mit_raw <- fread(export_data_file_name_web,
+                               colClasses = c("double", rep("character", 2), rep("double", 4)),
+                               select = c("year", "origin", "sitc", "export_val"))
+  fst::write.fst(export_data_mit_file_name, export_data_file_name_new, compress = 100)
+} else{
+  export_data_mit_raw <- fst::read.fst(export_data_mit_file_name)
+}
+
+
+# Get export data from Harvard=================================================
 # http://atlas.cid.harvard.edu/downloads
 
 export_data_file_name <- "data/hrvd_complexity_atlas.csv.gz"
@@ -55,7 +70,7 @@ if (update_data){
   export_data_raw <- export_data_raw[location_code%in%countrycode(countries_considered, "iso2c", "iso3c")]
   readr::write_csv(export_data_raw, gzfile(export_data_file_name))
 } else{
-  export_data_raw <- fread(cmd = paste0("gunzip -c ", export_data_file_name), 
+  export_data_raw <- fread(export_data_file_name, 
                            colClasses = c(rep("double", 2), rep("character", 2)))
 }
 
