@@ -2,9 +2,10 @@
 rm(list = ls())
 library(countrycode)
 library(data.table)
+library(tidyverse)
 library(WDI)
 update_data <- F
-export_data_source <- "MIT" # "MIT" or "HARV"
+export_data_source <- "HARV" # "MIT" or "HARV"
 
 countries_considered <- strsplit(
   "LU, SE, FI, DK, FR, NL, BE, SI, DE, AT, LV, EE, SK, CZ, PL, HU, GB, IE, PT, GR, ES, IT", 
@@ -67,8 +68,6 @@ if (export_data_source=="MIT"){
   } else{
     export_data_raw <- fst::read.fst(export_data_mit_file_name, as.data.table = T)
   }
-  export_data_raw[, total_exports:=sum(export_value, na.rm = T), 
-                  .(location_code, year)]
 }
 
 # Get export data from Harvard=================================================
@@ -85,10 +84,11 @@ if (export_data_source=="HARV"){
   } else{
     export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T) #colClasses = c(rep("double", 2), rep("character", 2)))
   }
-  export_data_raw[, total_exports:=sum(export_value, na.rm = T), 
-                  .(location_code, year)]
 }
-
+export_data_raw[, year:=as.double(year)
+                ][, export_value:=as.double(export_value)
+                  ][, total_exports:=sum(export_value, na.rm = T), 
+                    .(location_code, year)]
 
 # Oil shares of total exports=================================
 
