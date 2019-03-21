@@ -4,6 +4,7 @@ library(countrycode)
 library(data.table)
 library(WDI)
 update_data <- F
+export_data_source <- "MIT" # "MIT" or "HARV"
 
 countries_considered <- strsplit(
   "LU, SE, FI, DK, FR, NL, BE, SI, DE, AT, LV, EE, SK, CZ, PL, HU, GB, IE, PT, GR, ES, IT", 
@@ -45,40 +46,49 @@ exp_to_gdp <- exp_to_gdp_raw[, exp_to_gdp:=ne.trd.gnfs.zs
 
 # Get export data from MIT=====================================================
 # https://atlas.media.mit.edu/en/resources/data/
-export_data_mit_file_name <- "data/mit_export_data.fst"
-if (update_data){
-  web_link_mit <- "https://atlas.media.mit.edu/static/db/raw/year_origin_sitc_rev2.tsv.bz2"
-  web_link_countries <- "https://atlas.media.mit.edu/static/db/raw/country_names.tsv.bz2"
-  mit_country_names <- as.data.frame(fread(web_link_countries))
-  export_data_mit_raw <- fread(web_link_mit,
-                               colClasses = c("double", rep("character", 2), rep("double", 4)),
-                               select = c("year", "origin", "sitc", "export_val"))
-  export_data_mit_raw[, origin:=countrycode(origin, "id_3char", "name", 
-                                                  custom_dict = mit_country_names)
-                      ][, origin:=countrycode(origin, "country.name", "iso2c")]
-  export_data_mit_raw <- export_data_mit_raw[origin %in% countries_considered]
-  fst::write.fst(x = export_data_mit_raw, path = export_data_mit_file_name, compress = 100)
-} else{
-  export_data_mit_raw <- fst::read.fst(export_data_mit_file_name, as.data.table = T)
+if (export_data_source=="MIT"){
+  export_data_mit_file_name <- "data/mit_export_data.fst"
+  if (update_data){
+    web_link_mit <- "https://atlas.media.mit.edu/static/db/raw/year_origin_sitc_rev2.tsv.bz2"
+    web_link_countries <- "https://atlas.media.mit.edu/static/db/raw/country_names.tsv.bz2"
+    mit_country_names <- as.data.frame(fread(web_link_countries))
+    export_data_raw <- fread(web_link_mit,
+                                 colClasses = c("double", rep("character", 2), rep("double", 4)),
+                                 select = c("year", "origin", "sitc", "export_val"))
+    export_data_raw[, location_code:=countrycode(
+      countrycode(origin, "id_3char", "name", 
+                  custom_dict = mit_country_names), 
+      "country.name", "iso3c")] # TODO Fix location code
+    export_data_raw <- export_data_raw[location_code %in% countrycode(countries_considered, 
+                                                                      "iso2c", "iso3c"), 
+                                       .(year, export_value=export_val, 
+                                         location_code, sitc_product_code=sitc)]
+    fst::write.fst(x = export_data_raw, path = export_data_mit_file_name, compress = 100)
+  } else{
+    export_data_raw <- fst::read.fst(export_data_mit_file_name, as.data.table = T)
+  }
+  export_data_raw[, total_exports:=sum(export_value, na.rm = T), 
+                  .(location_code, year)]
 }
-
 
 # Get export data from Harvard=================================================
 # http://atlas.cid.harvard.edu/downloads
-
-export_data_file_name <- "data/hrvd_complexity_atlas.fst"
-if (update_data){
-  web_link <- "https://intl-atlas-downloads.s3.amazonaws.com/country_sitcproduct4digit_year.csv.zip"
-  export_data_raw <- fread(cmd = paste0("curl ", web_link, " | funzip"),
-                           colClasses = c(rep("double", 11), rep("character", 4)), 
-                           select = c("year", "export_value", "location_code", "sitc_product_code"))
-  export_data_raw <- export_data_raw[location_code%in%countrycode(countries_considered, "iso2c", "iso3c")]
-  fst::write.fst(x = export_data_raw, path = export_data_file_name, compress = 100)
-} else{
-  export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T) #colClasses = c(rep("double", 2), rep("character", 2)))
+if (export_data_source=="HARV"){
+  export_data_file_name <- "data/hrvd_complexity_atlas.fst"
+  if (update_data){
+    web_link <- "https://intl-atlas-downloads.s3.amazonaws.com/country_sitcproduct4digit_year.csv.zip"
+    export_data_raw <- fread(cmd = paste0("curl ", web_link, " | funzip"),
+                             colClasses = c(rep("double", 11), rep("character", 4)), 
+                             select = c("year", "export_value", "location_code", "sitc_product_code"))
+    export_data_raw <- export_data_raw[location_code%in%countrycode(countries_considered, "iso2c", "iso3c")]
+    fst::write.fst(x = export_data_raw, path = export_data_file_name, compress = 100)
+  } else{
+    export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T) #colClasses = c(rep("double", 2), rep("character", 2)))
+  }
+  export_data_raw[, total_exports:=sum(export_value, na.rm = T), 
+                  .(location_code, year)]
 }
-export_data_raw[, total_exports:=sum(export_value, na.rm = T), 
-                .(location_code, year)]
+
 
 # Oil shares of total exports=================================
 
@@ -197,4 +207,4 @@ full_data <- dplyr::full_join(coal_metal_shares, oil_exports,
   dplyr::full_join(., primary_exports_data, by=c("year", "location_code")) %>%
   dplyr::full_join(., exp_to_gdp, by=c("year", "location_code"="iso2c")) %>%
   dplyr::full_join(., nat_res_rents, by=c("year", "location_code"="iso2c"))
-fwrite(full_data, "data/dimension_endownment_data.csv")
+fwrite(full_data, paste0("data/dimension_endownment_data_", export_data_source, ".csv"))
