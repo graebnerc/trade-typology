@@ -77,19 +77,22 @@ if (export_data_source=="MIT"){
     web_link_countries <- "https://atlas.media.mit.edu/static/db/raw/country_names.tsv.bz2"
     mit_country_names <- as.data.frame(fread(web_link_countries))
     export_data_raw <- fread(web_link_mit,
-                                 colClasses = c("double", rep("character", 2), rep("double", 4)),
-                                 select = c("year", "origin", "sitc", "export_val"))
+                                 colClasses = c("double", rep("character", 2), 
+                                                rep("double", 4)),
+                                 select = c("year", "origin", "sitc", 
+                                            "export_val"))
     export_data_raw[, location_code:=countrycode(
       countrycode(origin, "id_3char", "name", 
                   custom_dict = mit_country_names), 
       "country.name", "iso3c")] # TODO Fix location code
-    export_data_raw <- export_data_raw[location_code %in% countrycode(countries_considered, 
-                                                                      "iso2c", "iso3c"), 
-                                       .(year, export_value=export_val, 
-                                         location_code, sitc_product_code=sitc)]
-    fst::write.fst(x = export_data_raw, path = export_data_mit_file_name, compress = 100)
+    export_data_raw <- export_data_raw[location_code %in% countrycode(
+      countries_considered, "iso2c", "iso3c"), 
+      .(year, export_value=export_val, location_code, sitc_product_code=sitc)]
+    fst::write.fst(x = export_data_raw, 
+                   path = export_data_mit_file_name, compress = 100)
   } else{
-    export_data_raw <- fst::read.fst(export_data_mit_file_name, as.data.table = T)
+    export_data_raw <- fst::read.fst(export_data_mit_file_name, 
+                                     as.data.table = T)
   }
 }
 
@@ -100,12 +103,17 @@ if (export_data_source=="HARV"){
   if (update_data){
     web_link <- "https://intl-atlas-downloads.s3.amazonaws.com/country_sitcproduct4digit_year.csv.zip"
     export_data_raw <- fread(cmd = paste0("curl ", web_link, " | funzip"),
-                             colClasses = c(rep("double", 11), rep("character", 4)), 
-                             select = c("year", "export_value", "location_code", "sitc_product_code"))
-    export_data_raw <- export_data_raw[location_code%in%countrycode(countries_considered, "iso2c", "iso3c")]
-    fst::write.fst(x = export_data_raw, path = export_data_file_name, compress = 100)
+                             colClasses = c(rep("double", 11), 
+                                            rep("character", 4)), 
+                             select = c("year", "export_value", 
+                                        "location_code", "sitc_product_code"))
+    export_data_raw <- export_data_raw[location_code%in%countrycode(
+      countries_considered, "iso2c", "iso3c")]
+    fst::write.fst(x = export_data_raw, 
+                   path = export_data_file_name, compress = 100)
   } else{
-    export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T)
+    export_data_raw <- fst::read.fst(export_data_file_name, 
+                                     as.data.table = T)
   }
 }
 export_data_raw[, year:=as.double(year)
@@ -113,7 +121,7 @@ export_data_raw[, year:=as.double(year)
                   ][, total_exports:=sum(export_value, na.rm = T), 
                     .(location_code, year)]
 
-# Oil shares of total exports=================================
+# Oil shares of total exports==================================================
 
 # For SITC codes see: 
 # https://unstats.un.org/unsd/tradekb/Knowledgebase/50262/Search-SITC-code-description
@@ -206,7 +214,8 @@ primary_exports_data[, sitc_main:=substr(sitc_product_code, 1, 1)
                          ][, primary_exports_share_2:=export_primary_2/total_exports]
 primary_exports_data <-  unique(
   primary_exports_data[!is.na(primary_exports_share_1) & !is.na(primary_exports_share_2), 
-                       .(year, location_code, primary_exports_share_1, primary_exports_share_2)]
+                       .(year, location_code, 
+                         primary_exports_share_1, primary_exports_share_2)]
   )
 
 # Test with dplyr -------------------------------------------------------------
@@ -230,4 +239,5 @@ full_data <- dplyr::full_join(coal_metal_shares, oil_exports,
   dplyr::full_join(., primary_exports_data, by=c("year", "location_code")) %>%
   dplyr::full_join(., exp_to_gdp, by=c("year", "location_code"="iso2c")) %>%
   dplyr::full_join(., nat_res_rents, by=c("year", "location_code"="iso2c"))
-fwrite(full_data, paste0("data/dimension_endownment_data_", export_data_source, ".csv"))
+fwrite(full_data, paste0("data/dimension_endownment_data_", 
+                         export_data_source, ".csv"))
