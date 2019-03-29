@@ -6,7 +6,7 @@ library(data.table)
 library(tidyverse)
 library(WDI)
 update_data <- T
-export_data_source <- "HARV" # "MIT" or "HARV"
+export_data_source <- "MIT" # "MIT" or "HARV"
 
 countries_considered <- strsplit(
   "LU, SE, FI, DK, FR, NL, BE, SI, DE, AT, LV, EE, SK, CZ, PL, HU, GB, IE, PT, GR, ES, IT", 
@@ -230,14 +230,14 @@ test_primary_goods_shares <- test_primary_goods_shares %>%
 # Merging data=================================================================
 
 head(nat_res_rents)
-head(exp_to_gdp)
+head(trade_to_gdp)
 head(primary_exports_data)
 head(oil_exports)
 head(coal_metal_shares)
 full_data <- dplyr::full_join(coal_metal_shares, oil_exports, 
                               by=c("year", "location_code")) %>%
   dplyr::full_join(., primary_exports_data, by=c("year", "location_code")) %>%
-  dplyr::full_join(., exp_to_gdp, by=c("year", "location_code"="iso2c")) %>%
+  dplyr::full_join(., trade_to_gdp, by=c("year", "location_code"="iso2c")) %>%
   dplyr::full_join(., nat_res_rents, by=c("year", "location_code"="iso2c"))
 fwrite(full_data, paste0("data/dimension_endownment_data_", 
                          export_data_source, ".csv"))
