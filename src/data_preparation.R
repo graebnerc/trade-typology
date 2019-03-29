@@ -1,10 +1,11 @@
 # 15.03.2019: Create new data for endownment dimension
+# 29.03.2019: Distinguish export and trade/GDP from world bank
 rm(list = ls())
 library(countrycode)
 library(data.table)
 library(tidyverse)
 library(WDI)
-update_data <- F
+update_data <- T
 export_data_source <- "HARV" # "MIT" or "HARV"
 
 countries_considered <- strsplit(
@@ -28,22 +29,35 @@ nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
                                    ][, iso2c:=countrycode(iso2c, "iso2c", "iso3c")
                                      ][, .(iso2c, year,res_rents)]
 
-# Exports to GDP===============================================================
+# Trade to GDP===============================================================
 # https://data.worldbank.org/indicator/ne.trd.gnfs.zs
 
-exp_to_gdp_file_name <- "data/wb_exp_to_gdp.csv"
-if (update_data){
-  exp_to_gdp_raw <- as.data.table(WDI::WDI(country = countries_considered, 
-                                           indicator = "ne.trd.gnfs.zs", 
-                                           start = 1962, end = 2016))
-  data.table::fwrite(exp_to_gdp_raw, exp_to_gdp_file_name)
-} else {# TODO Test whether file exists
-  exp_to_gdp_raw <- data.table::fread(exp_to_gdp_file_name)
+trade_to_gdp_file_name <- "data/wb_trade_to_gdp.csv"
+if (update_data) {
+  trade_to_gdp_raw <- as.data.table(WDI::WDI(
+    country = countries_considered,
+    indicator = "ne.trd.gnfs.zs",
+    start = 1962, end = 2016
+  ))
+  data.table::fwrite(trade_to_gdp_raw, trade_to_gdp_file_name)
+} else {
+  if (!file.exists(trade_to_gdp_file_name)) {
+    warning("File for trade to GDP does not exist. Download from www...")
+    trade_to_gdp_raw <- as.data.table(WDI::WDI(
+      country = countries_considered,
+      indicator = "ne.trd.gnfs.zs",
+      start = 1962, end = 2016
+    ))
+    data.table::fwrite(trade_to_gdp_raw, trade_to_gdp_file_name)
+  } else {
+    trade_to_gdp_raw <- data.table::fread(exp_to_gdp_file_name)
+  }
 }
 
-exp_to_gdp <- exp_to_gdp_raw[, exp_to_gdp:=ne.trd.gnfs.zs
-                             ][, iso2c:=countrycode(iso2c, "iso2c", "iso3c")
-                               ][, .(iso2c, year, exp_to_gdp)]
+trade_to_gdp <- trade_to_gdp_raw[, trade_to_gdp := ne.trd.gnfs.zs
+                                 ][, iso2c := countrycode(iso2c, 
+                                                          "iso2c", "iso3c")
+                                   ][, .(iso2c, year, exp_to_gdp)]
 
 # Get export data from MIT=====================================================
 # https://atlas.media.mit.edu/en/resources/data/
