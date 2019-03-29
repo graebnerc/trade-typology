@@ -30,13 +30,17 @@ nat_res_rents <- nat_res_rents_raw[, res_rents:=ny.gdp.totl.rt.zs
                                      ][, .(iso2c, year,res_rents)]
 
 # Trade to GDP===============================================================
-# https://data.worldbank.org/indicator/ne.trd.gnfs.zs
+# https://data.worldbank.org/indicator/ne.trd.gnfs.zs # Trade
+# https://data.worldbank.org/indicator/ne.exp.gnfs.zs # Exports
+# https://data.worldbank.org/indicator/NE.IMP.GNFS.ZS # Imports
 
 trade_to_gdp_file_name <- "data/wb_trade_to_gdp.csv"
 if (update_data) {
   trade_to_gdp_raw <- as.data.table(WDI::WDI(
     country = countries_considered,
-    indicator = "ne.trd.gnfs.zs",
+    indicator = c("ne.trd.gnfs.zs",
+                  "ne.exp.gnfs.zs",
+                  "NE.IMP.GNFS.ZS"),
     start = 1962, end = 2016
   ))
   data.table::fwrite(trade_to_gdp_raw, trade_to_gdp_file_name)
@@ -45,7 +49,9 @@ if (update_data) {
     warning("File for trade to GDP does not exist. Download from www...")
     trade_to_gdp_raw <- as.data.table(WDI::WDI(
       country = countries_considered,
-      indicator = "ne.trd.gnfs.zs",
+      indicator = c("ne.trd.gnfs.zs",
+                    "ne.exp.gnfs.zs",
+                    "NE.IMP.GNFS.ZS"),
       start = 1962, end = 2016
     ))
     data.table::fwrite(trade_to_gdp_raw, trade_to_gdp_file_name)
@@ -54,10 +60,13 @@ if (update_data) {
   }
 }
 
-trade_to_gdp <- trade_to_gdp_raw[, trade_to_gdp := ne.trd.gnfs.zs
-                                 ][, iso2c := countrycode(iso2c, 
-                                                          "iso2c", "iso3c")
-                                   ][, .(iso2c, year, exp_to_gdp)]
+trade_to_gdp_raw[, trade_to_gdp := ne.trd.gnfs.zs]
+trade_to_gdp_raw[, exp_to_gdp := ne.exp.gnfs.zs]
+trade_to_gdp_raw[, imp_to_gdp := NE.IMP.GNFS.ZS]
+trade_to_gdp_raw[, exp_minus_imp := exp_to_gdp - imp_to_gdp]
+trade_to_gdp_raw[, iso2c := countrycode(iso2c, "iso2c", "iso3c")]
+trade_to_gdp <- trade_to_gdp_raw[, .(iso2c, year, trade_to_gdp, 
+                                     exp_to_gdp, imp_to_gdp, exp_minus_imp)]
 
 # Get export data from MIT=====================================================
 # https://atlas.media.mit.edu/en/resources/data/
@@ -96,7 +105,7 @@ if (export_data_source=="HARV"){
     export_data_raw <- export_data_raw[location_code%in%countrycode(countries_considered, "iso2c", "iso3c")]
     fst::write.fst(x = export_data_raw, path = export_data_file_name, compress = 100)
   } else{
-    export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T) #colClasses = c(rep("double", 2), rep("character", 2)))
+    export_data_raw <- fst::read.fst(export_data_file_name, as.data.table = T)
   }
 }
 export_data_raw[, year:=as.double(year)
