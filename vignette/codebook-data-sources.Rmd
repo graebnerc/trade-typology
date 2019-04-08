@@ -23,7 +23,7 @@ Here are the information about the variables in the data set. You can also look 
 | exp_to_gdp                  | Value of all goods and other market services provided to the rest of the world      | % of GDP           | [World Bank][3]  |
 | imp_to_gdp                  | Value of all goods and other market services received from the rest of the world.   | % of GDP           | [World Bank][4]  |
 | exp_minus_imp               | `exp_to_gdp` minus `imp_to_gdp`                                                     | % of GDP           | Own calculation  |
-| res_rents                   | Gross fixed capital formation, total economy                                        | current prices     | [World Bank][5]  |
+| res_rents                   | Total natural ressource rents                                       | % of GDP     | [World Bank][5]  |
 | oil_exports_share           | Share of oil in good exports (28, 32, 35, 68, 97, 5224, 5231, 5232, 5233)           | % of total exports | [MIT][6] or [HARV][7] Atlas, own calculation  |
 | coal_metal_export_share     | Share of coals and metals in good exports (SITC codes 33 and 34)                    | % of total exports | [MIT][6] or [HARV][7] Atlas, own calculation  |
 | primary_exports_share_1     | Share of primary goods (SITC codes 0, 1, 2, 4)                                      | % of total exports | [MIT][6] or [HARV][7] Atlas, own calculation  |
