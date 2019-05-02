@@ -96,36 +96,63 @@ cluster_vars <- c("zkof_econ_defacto", "zcoal_metal_export_share",
                   "zemployment_protect", "zubr", "zgov_exp_socprtc", 
                   "zgini_market", "ztax_corpcap", "ztax_estate_plus_wealth", 
                   "zfdi_to_gdp", "zsize_of_finance", "zkof_econ_dejure")
-                  
-cluster_STATA_data <- cluster_data_DTA_normed1994 %>%
-  dplyr::select(one_of("country", cluster_vars)) %>%
-  dplyr::mutate(country=countrycode(country, 
-                                    "country.name", "country.name.de"))
 
-cluster_STATA_data <- as.data.frame(cluster_STATA_data)
-rownames(cluster_STATA_data) <- cluster_STATA_data$country
+#' Clustering
+#' 
+#' Conducts the clustering
+#' @param data_file The file for the clustering, must not contain NA
+#' @param clustering_vars Should contain all the variables to be used
+#'   in the clustering as strings
+#' @param nb_groups The number of groups to be highlighted in the plot
+#' @return List with clustering object, the data used, and the plot.
+do_clustering <- function(data_file, clustering_vars, nb_groups){
+  cluster_data <- data_file %>%
+    dplyr::select(one_of("country", clustering_vars)) %>%
+    dplyr::mutate(country=countrycode(country, 
+                                      "country.name", "country.name.de"))
+  
+  cluster_data <- as.data.frame(cluster_data)
+  rownames(cluster_data) <- cluster_data$country
+  
+  cluster_data <- select(cluster_data, -country)
+  clustering_object <- cluster_data %>%
+    cluster::agnes(method = "ward") # Compute hierachical clustering
+  
+  
+  cluster_plot <- factoextra::fviz_dend(clustering_object, 
+                                        k = nb_groups, 
+                                        cex = 0.75, # label size
+                                        rect = TRUE, # Add rectangle around groups
+                                        rect_fill = TRUE,
+                                        color_labels_by_k = TRUE, # color labels by groups
+                                        k_colors = RColorBrewer::brewer.pal(
+                                          n_groups, "Dark2"),
+                                        rect_border = RColorBrewer::brewer.pal(
+                                          n_groups, "Dark2"),
+                                        horiz = TRUE
+  ) + theme(axis.text.x = element_blank(),
+            axis.ticks.x = element_blank())
+  return_list <- list(
+    "cluster_obj" = clustering_object,
+    "cluster_data" = cluster_data,
+    "cluster_plot" = cluster_plot
+  )
+  return(return_list)
+  
+}
 
-cluster_STATA_data <- select(cluster_STATA_data, -country)
-clustering_object <- cluster_STATA_data %>%
-  cluster::agnes(method = "ward") # Compute hierachical clustering
+replication_dennis <- do_clustering(cluster_data_DTA_normed1994, 
+                                    cluster_vars, 
+                                    n_groups)
 
-dendo_plot <- factoextra::fviz_dend(clustering_object,
-                        main = "Clustering Ergebnis in R",
-                        xlab = "Countries", ylab = "",
-                        k = n_groups, # Cut in groups
-                        cex = 0.75, # label size
-                        rect = TRUE, # Add rectangle around groups
-                        rect_fill = TRUE,
-                        color_labels_by_k = TRUE, # color labels by groups
-                        k_colors = RColorBrewer::brewer.pal(
-                          n_groups, "Dark2"),
-                        rect_border = RColorBrewer::brewer.pal(
-                          n_groups, "Dark2"),
-                        horiz = TRUE
-)
-sub_grp <- cutree(as.hclust(clustering_object), k = n_groups)
+replication_dennis_plot <-  replication_dennis$cluster_plot + 
+  ggtitle("Clustering Ergebnis in R") +
+  xlab("Länder") + ylab("")
+
+replication_dennis_plot
+
+# sub_grp <- cutree(as.hclust(clustering_object), k = n_groups)
 ggplot2::ggsave(filename = "output/clustering_R.pdf", 
                 width = 7, height = 6)
 
-# TODO ab 1994 vs. später
 # TODO nochmal genau durchgehen: geht es auch ohne die mittelwerte
