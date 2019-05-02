@@ -50,7 +50,7 @@ cluster_data_DTA_v3 <- cluster_data_DTA_v2 %>%
 
 # Process data: z standartization----------------------------------------------
 
-cluster_data_DTA_normed1994 <- cluster_data_DTA_v3 %>%
+cluster_data_DTA_v3_normed <- cluster_data_DTA_v3 %>%
   dplyr::mutate(
     zkof_econ_defacto = scale(kof_econ_defacto), # egen zkof_econ_defacto =std( kof_econ_defacto)
     zgov_exp_to_gdp = scale(gov_exp_to_gdp), # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
@@ -85,7 +85,6 @@ cluster_data_DTA_normed1994 <- cluster_data_DTA_v3 %>%
 
 # should be the same as:
 cluster_data_DTA_normed1994 <- haven::read_dta("data/v34_cluster_mean_1994.dta")
-# TODO Hier noch v34_cluster_mean.dta zum vergleich checken
 
 # Cluster implementation=======================================================
 n_groups <- 5
