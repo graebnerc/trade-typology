@@ -23,3 +23,34 @@ cluster_data_R <- dplyr::full_join(ictwss, endownments,
 
 cluster_data_DTA <- haven::read_dta("data/v34_cluster.dta")
 
+# TODO cluster_data_DTA weist deutlich mehr variablen auf als sich aus dem do file ergibt. Warum?
+
+# Process data=================================================================
+# Make means-------------------------------------------------------------------
+# hier werden die mittelwerte genommen
+cluster_data_DTA_v2 <- cluster_data_DTA %>%
+  select(-one_of("v1", "x", "country")) %>%
+  dplyr::group_by(un_ccode) %>%
+  dplyr::summarise_all(mean, na.rm=T) %>%
+  dplyr::ungroup()
+
+# Process data: make means-----------------------------------------------------
+drop_countries <- c("Canada", "Mexico", "New Zealand", "Turkey", "Switzerland",
+                    "United States", "Iceland", "Australia", "Korea", "Norway",
+                    "Japan", "Bulgaria", "Slovak Republic", "Lithuania")
+drop_countries <- countrycode::countrycode(drop_countries, 
+                                           "country.name", "un")
+
+cluster_data_DTA_v3 <- cluster_data_DTA_v2 %>%
+  dplyr::filter(!un_ccode %in% drop_countries)
+
+# Process data: z standartization----------------------------------------------
+# TODO Check warum man das genau braucht und ob das sinnvoll ist
+
+
+
+
+
+
+
+
