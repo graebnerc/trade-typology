@@ -32,6 +32,7 @@ cluster_data_DTA <- haven::read_dta("data/v34_cluster.dta")
 # Make means-------------------------------------------------------------------
 # hier werden die mittelwerte genommen
 cluster_data_DTA_v2 <- cluster_data_DTA %>%
+  dplyr::filter(year>=1994) %>%
   select(-one_of("v1", "x", "country")) %>%
   dplyr::group_by(un_ccode) %>%
   dplyr::summarise_all(mean, na.rm=T) %>%
@@ -48,7 +49,6 @@ cluster_data_DTA_v3 <- cluster_data_DTA_v2 %>%
   dplyr::filter(!un_ccode %in% drop_countries)
 
 # Process data: z standartization----------------------------------------------
-# TODO Check warum man das genau braucht und ob das sinnvoll ist
 
 cluster_data_DTA_normed1994 <- cluster_data_DTA_v3 %>%
   dplyr::mutate(
@@ -100,7 +100,8 @@ cluster_vars <- c("zkof_econ_defacto", "zcoal_metal_export_share",
                   
 cluster_STATA_data <- cluster_data_DTA_normed1994 %>%
   dplyr::select(one_of("country", cluster_vars)) %>%
-  dplyr::mutate(country=countrycode(country, "country.name", "country.name.de"))
+  dplyr::mutate(country=countrycode(country, 
+                                    "country.name", "country.name.de"))
 
 cluster_STATA_data <- as.data.frame(cluster_STATA_data)
 rownames(cluster_STATA_data) <- cluster_STATA_data$country
@@ -117,11 +118,15 @@ dendo_plot <- factoextra::fviz_dend(clustering_object,
                         rect = TRUE, # Add rectangle around groups
                         rect_fill = TRUE,
                         color_labels_by_k = TRUE, # color labels by groups
-                        k_colors = RColorBrewer::brewer.pal(n_groups, "Dark2"),
-                        rect_border = RColorBrewer::brewer.pal(n_groups, "Dark2"),
+                        k_colors = RColorBrewer::brewer.pal(
+                          n_groups, "Dark2"),
+                        rect_border = RColorBrewer::brewer.pal(
+                          n_groups, "Dark2"),
                         horiz = TRUE
 )
 sub_grp <- cutree(as.hclust(clustering_object), k = n_groups)
 ggplot2::ggsave(filename = "output/clustering_R.pdf", 
                 width = 7, height = 6)
 
+# TODO ab 1994 vs. später
+# TODO nochmal genau durchgehen: geht es auch ohne die mittelwerte
