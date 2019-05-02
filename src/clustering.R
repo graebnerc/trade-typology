@@ -3,6 +3,9 @@ library(countrycode)
 library(data.table)
 library(tidyverse)
 library(haven)
+library(factoextra)
+library(cluster)
+
 
 # Data preparation=============================================================
 # R version of "Syntax_aufbereitung"
@@ -84,7 +87,41 @@ cluster_data_DTA_normed1994 <- cluster_data_DTA_v3 %>%
 cluster_data_DTA_normed1994 <- haven::read_dta("data/v34_cluster_mean_1994.dta")
 # TODO Hier noch v34_cluster_mean.dta zum vergleich checken
 
+# Cluster implementation=======================================================
+n_groups <- 5
 
+cluster_vars <- c("zkof_econ_defacto", "zcoal_metal_export_share", 
+                  "zoil_exports_share", "zprimary_exports_share_1", 
+                  "zres_rents", "zcomplexity_harv", "zindustrial_to_gdp", 
+                  "zgerd", "zict_ksh", "zgov_exp_educ", "zcoord", 
+                  "zemployment_protect", "zubr", "zgov_exp_socprtc", 
+                  "zgini_market", "ztax_corpcap", "ztax_estate_plus_wealth", 
+                  "zfdi_to_gdp", "zsize_of_finance", "zkof_econ_dejure")
+                  
+cluster_STATA_data <- cluster_data_DTA_normed1994 %>%
+  dplyr::select(one_of("country", cluster_vars)) %>%
+  dplyr::mutate(country=countrycode(country, "country.name", "country.name.de"))
 
+cluster_STATA_data <- as.data.frame(cluster_STATA_data)
+rownames(cluster_STATA_data) <- cluster_STATA_data$country
 
+cluster_STATA_data <- select(cluster_STATA_data, -country)
+clustering_object <- cluster_STATA_data %>%
+  cluster::agnes(method = "ward") # Compute hierachical clustering
+
+dendo_plot <- factoextra::fviz_dend(clustering_object,
+                        main = "Clustering Ergebnis in R",
+                        xlab = "Countries", ylab = "",
+                        k = n_groups, # Cut in groups
+                        cex = 0.75, # label size
+                        rect = TRUE, # Add rectangle around groups
+                        rect_fill = TRUE,
+                        color_labels_by_k = TRUE, # color labels by groups
+                        k_colors = RColorBrewer::brewer.pal(n_groups, "Dark2"),
+                        rect_border = RColorBrewer::brewer.pal(n_groups, "Dark2"),
+                        horiz = TRUE
+)
+sub_grp <- cutree(as.hclust(clustering_object), k = n_groups)
+ggplot2::ggsave(filename = "output/clustering_R.pdf", 
+                width = 7, height = 6)
 
