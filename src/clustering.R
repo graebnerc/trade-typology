@@ -5,6 +5,7 @@ library(tidyverse)
 library(haven)
 library(factoextra)
 library(cluster)
+# TODO Check robustness wie in JEE
 
 # Function definitions=========================================================
 #' Clustering
