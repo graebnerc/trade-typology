@@ -88,7 +88,7 @@ cluster_data_DTA_v2 <- cluster_data_DTA %>%
 # hier werden die mittelwerte genommen
 cluster_data_DTA_v3_means <- cluster_data_DTA_v2 %>%
   dplyr::filter(year>=1994) %>%
-  select(-one_of("v1", "x")) %>%
+  select(-one_of("v1", "x", "year")) %>%
   dplyr::group_by(un_ccode) %>%
   dplyr::summarise_all(mean, na.rm=T) %>%
   dplyr::ungroup() %>%
@@ -98,35 +98,35 @@ cluster_data_DTA_v3_means <- cluster_data_DTA_v2 %>%
 
 cluster_data_DTA_v3_means_normed <- cluster_data_DTA_v3_means %>%
   dplyr::mutate(
-    zkof_econ_defacto = scale(kof_econ_defacto), # egen zkof_econ_defacto =std( kof_econ_defacto)
-    zgov_exp_to_gdp = scale(gov_exp_to_gdp), # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
-    ztax_total = scale(tax_total), # egen ztax_total =std(tax_total)
-    zcomplexity_harv = scale(complexity_harv), # egen zcomplexity_harv =std( complexity_harv)
-    zindustrial_to_gdp = scale(industrial_to_gdp), # egen zindustrial_to_gdp =std( industrial_to_gdp)
-    zgerd = scale(gerd), # egen zgerd =std(gerd)
-    zict_ksh = scale(ict_ksh), # egen zict_ksh =std( ict_ksh)
-    zgov_exp_educ = scale(gov_exp_educ), # egen zgov_exp_educ =std( gov_exp_educ )
-    zadjusted_wage_share = scale(adjusted_wage_share), # egen zadjusted_wage_share =std( adjusted_wage_share )
-    zemployment_protect = scale(employment_protect), # egen zemployment_protect =std( employment_protect )
-    zubr = scale(ubr), # egen zubr =std( ubr )
+    zkof_econ_defacto = scale(kof_econ_defacto)[,1], # egen zkof_econ_defacto =std( kof_econ_defacto)
+    zgov_exp_to_gdp = scale(gov_exp_to_gdp)[,1], # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
+    ztax_total = scale(tax_total)[,1], # egen ztax_total =std(tax_total)
+    zcomplexity_harv = scale(complexity_harv)[,1], # egen zcomplexity_harv =std( complexity_harv)
+    zindustrial_to_gdp = scale(industrial_to_gdp)[,1], # egen zindustrial_to_gdp =std( industrial_to_gdp)
+    zgerd = scale(gerd)[,1], # egen zgerd =std(gerd)
+    zict_ksh = scale(ict_ksh)[,1], # egen zict_ksh =std( ict_ksh)
+    zgov_exp_educ = scale(gov_exp_educ)[,1], # egen zgov_exp_educ =std( gov_exp_educ )
+    zadjusted_wage_share = scale(adjusted_wage_share)[,1], # egen zadjusted_wage_share =std( adjusted_wage_share )
+    zemployment_protect = scale(employment_protect)[,1], # egen zemployment_protect =std( employment_protect )
+    zubr = scale(ubr)[,1], # egen zubr =std( ubr )
     zudens = scale(udens), # egen zudens =std( udens )
-    zgini_market = scale(gini_market), # egen zgini_market =std(gini_market )
-    ztax_ssc_employer = scale(tax_ssc_employer), # egen ztax_ssc_employer =std( tax_ssc_employer )
-    ztax_corpcap = scale(tax_corpcap), # egen ztax_corpcap =std( tax_corpcap )
-    ztax_estate_plus_wealth = scale(tax_estate_plus_wealth), # egen ztax_estate_plus_wealth =std( tax_estate_plus_wealth )
-    zfdi_to_gdp = scale(fdi_to_gdp), # egen zfdi_to_gdp =std( fdi_to_gdp )
-    zsize_of_finance = scale(size_of_finance), # egen zsize_of_finance =std( size_of_finance )
-    zkof_econ_dejure = scale(kof_econ_dejure), # egen zkof_econ_dejure =std( kof_econ_dejure )
-    zoil_exports_share = scale(oil_exports_share), # egen zoil_exports_share=std( oil_exports_share)
-    zprimary_exports_share_1 = scale(primary_exports_share_1), # egen zprimary_exports_share_1=std( primary_exports_share_1)
-    zexp_to_gdp = scale(exp_to_gdp), # egen zexp_to_gdp=std( exp_to_gdp)
-    zres_rents = scale(res_rents), # egen zres_rents =std( res_rents )
-    zcoal_metal_export_share = scale(coal_metal_export_share), # egen zcoal_metal_export_share =std( coal_metal_export_share )
-    zgov_exp_socprtc = scale(gov_exp_socprtc), # egen zgov_exp_socprtc =std(gov_exp_socprtc )
-    zcoord = scale(coord), # egen zcoord=std(coord)
-    zadjcov = scale(adjcov), # egen zadjcov=std(adjcov)
-    ztax_income = scale(tax_income), # egen ztax_income =std(tax_income)
-    ztax_rev_to_gdp = scale(tax_rev_to_gdp) # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
+    zgini_market = scale(gini_market)[,1], # egen zgini_market =std(gini_market )
+    ztax_ssc_employer = scale(tax_ssc_employer)[,1], # egen ztax_ssc_employer =std( tax_ssc_employer )
+    ztax_corpcap = scale(tax_corpcap)[,1], # egen ztax_corpcap =std( tax_corpcap )
+    ztax_estate_plus_wealth = scale(tax_estate_plus_wealth)[,1], # egen ztax_estate_plus_wealth =std( tax_estate_plus_wealth )
+    zfdi_to_gdp = scale(fdi_to_gdp)[,1], # egen zfdi_to_gdp =std( fdi_to_gdp )
+    zsize_of_finance = scale(size_of_finance)[,1], # egen zsize_of_finance =std( size_of_finance )
+    zkof_econ_dejure = scale(kof_econ_dejure)[,1], # egen zkof_econ_dejure =std( kof_econ_dejure )
+    zoil_exports_share = scale(oil_exports_share)[,1], # egen zoil_exports_share=std( oil_exports_share)
+    zprimary_exports_share_1 = scale(primary_exports_share_1)[,1], # egen zprimary_exports_share_1=std( primary_exports_share_1)
+    zexp_to_gdp = scale(exp_to_gdp)[,1], # egen zexp_to_gdp=std( exp_to_gdp)
+    zres_rents = scale(res_rents)[,1], # egen zres_rents =std( res_rents )
+    zcoal_metal_export_share = scale(coal_metal_export_share)[,1], # egen zcoal_metal_export_share =std( coal_metal_export_share )
+    zgov_exp_socprtc = scale(gov_exp_socprtc)[,1], # egen zgov_exp_socprtc =std(gov_exp_socprtc )
+    zcoord = scale(coord)[,1], # egen zcoord=std(coord)
+    zadjcov = scale(adjcov)[,1], # egen zadjcov=std(adjcov)
+    ztax_income = scale(tax_income)[,1], # egen ztax_income =std(tax_income)
+    ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1] # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
   )
 
 # should be the same as:
@@ -147,23 +147,41 @@ cluster_vars <- c("zkof_econ_defacto", "zcoal_metal_export_share",
                   "zemployment_protect", "zubr", "zgov_exp_socprtc", 
                   "zgini_market", "ztax_corpcap", "ztax_estate_plus_wealth", 
                   "zfdi_to_gdp", "zsize_of_finance", "zkof_econ_dejure")
+###
+cluster_data_r <- cluster_data_DTA_v3_means_normed %>%
+  dplyr::select(one_of("country", cluster_vars)) %>%
+  dplyr::mutate(country=countrycode(country, 
+                                    "country.name", "country.name.de"))
 
-replication_dta <- do_clustering(cluster_data_DTA_normed1994, 
-                                 cluster_vars, 
-                                 n_groups)
+cluster_data_dta <- cluster_data_DTA_normed1994 %>%
+  dplyr::select(one_of("country", cluster_vars)) %>%
+  dplyr::mutate(country=countrycode(country, 
+                                    "country.name", "country.name.de"))
+
+cluster_data_dta <- as.data.frame(cluster_data_dta)
+rownames(cluster_data_dta) <- cluster_data_dta$country
+
+cluster_data <- select(cluster_data, -country)
+clustering_object <- cluster_data %>%
+  cluster::agnes(method = "ward") # Compute hierachical clustering
+###
+replication_dta <- do_clustering(
+  cluster_data_DTA_normed1994, 
+  cluster_vars, 
+  n_groups)
 
 replication_r <- do_clustering(
   cluster_data_DTA_v3_means_normed, 
   cluster_vars, 
   n_groups)
-
-replication_dennis_plot_dta <-  replication_dennis$cluster_plot + 
+# TODO Die beiden sind unterschiedlich, aber es ist nicht klar warum. Scheint mit unterschieldicher Skalierung zu tun haben...
+replication_dennis_plot_dta <-  replication_dta$cluster_plot + 
   ggtitle("Clustering Ergebnis in R (dta file)") +
   xlab("Länder") + ylab("")
 replication_dennis_plot_dta
 
 replication_dennis_plot_R <-  replication_r$cluster_plot + 
-  ggtitle("Clustering Ergebnis in R (new dataset)") +
+  ggtitle("Clustering Ergebnis in R (Werte in R normalisiert)") +
   xlab("Länder") + ylab("")
 replication_dennis_plot_R
 
