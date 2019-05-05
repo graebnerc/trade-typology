@@ -6,7 +6,7 @@ library(haven)
 library(factoextra)
 library(cluster)
 # TODO Check robustness wie in JEE
-
+# TODO Descriptive descriptions of the various clusters for section 4, just as in JEE
 # Function definitions=========================================================
 #' Clustering
 #' 
@@ -15,8 +15,13 @@ library(cluster)
 #' @param clustering_vars Should contain all the variables to be used
 #'   in the clustering as strings
 #' @param nb_groups The number of groups to be highlighted in the plot
+#' @param clustering_method The method to be used in the \code{agnes} function:
+#'    'ward', 'single', 'complete', 'average' or 'divisive'.
 #' @return List with clustering object, the data used, and the plot.
-do_clustering <- function(data_file, clustering_vars, nb_groups){
+do_clustering <- function(data_file, 
+                          clustering_vars, 
+                          nb_groups, 
+                          clustering_method="ward"){
   cluster_data <- data_file %>%
     dplyr::select(one_of("country", clustering_vars)) %>%
     dplyr::mutate(country=countrycode(country, 
@@ -26,10 +31,14 @@ do_clustering <- function(data_file, clustering_vars, nb_groups){
   rownames(cluster_data) <- cluster_data$country
   
   cluster_data <- select(cluster_data, -country)
-  clustering_object <- cluster_data %>%
-    cluster::agnes(method = "ward") # Compute hierachical clustering
-  
-  
+  if (clustering_method=="divisive"){
+    clustering_object <- cluster_data %>%
+      cluster::diana(.)
+  } else {
+    clustering_object <- cluster_data %>%
+      cluster::agnes(method = clustering_method) # Compute hierachical clustering
+  }
+
   cluster_plot <- factoextra::fviz_dend(clustering_object, 
                                         k = nb_groups, 
                                         cex = 0.75, # label size
@@ -49,7 +58,49 @@ do_clustering <- function(data_file, clustering_vars, nb_groups){
     "cluster_plot" = cluster_plot
   )
   return(return_list)
+}
+
+#' Compare clustering algorithms
+#' 
+#' Compares three clustering algorithms by computing their scores and by 
+#'   producing a table.
+#'   
+#'   @param raw_dat The data to be used for the clustering
+compare_clustering_types <- function(raw_dat, 
+                                     cluster_vars) {
   
+  rownames(int_dat) <- int_dat$country
+  int_dat <- select(int_dat, -country)
+  int_dat <- get_diff_matrix(int_dat, raw_dat = TRUE)
+  diss_matrix <- get_diff_matrix(int_dat, raw_dat = FALSE)
+  
+  hc_agnes_complete_linkage <- # Hierarchical clustering using Complete Linkage
+    do_clustering(diss_matrix, cluster_vars, 5, "complete")[["cluster_obj"]]
+  hc_agnes_average_linkage <- # Hierarchical clustering using Average Linkage
+    do_clustering(diss_matrix, cluster_vars, 5, "average")[["cluster_obj"]]
+  hc_agnes_single_linkage <- # Hierarchical clustering using single Linkage
+    do_clustering(diss_matrix, cluster_vars, 5, "single")[["cluster_obj"]]
+  hc_agnes_ward <- # Hierarchical clustering using Ward's method
+    do_clustering(diss_matrix, cluster_vars, 5, "ward")[["cluster_obj"]]
+  divisive_cluster <-  # divisive hierarchical clustering
+    do_clustering(int_dat, cluster_vars, 5, "divisive")[["cluster_obj"]]
+
+  # hc_agnes_complete_linkage <- agnes(diss_matrix, method = "complete") 
+  # hc_agnes_average_linkage <- agnes(diss_matrix, method = "average") 
+  # hc_agnes_single_linkage <- agnes(diss_matrix, method = "single") 
+  # hc_agnes_ward <- agnes(diss_matrix, method = "ward") 
+  # divisive_cluster <- diana(int_dat)
+  cluster_type <- c("agnes_complete", "agnes_average", "agnes_single", 
+                    "agnes_ward", "diana_divisive")
+  fit_coefs <- c(hc_agnes_complete_linkage$ac, hc_agnes_average_linkage$ac, 
+                 hc_agnes_single_linkage$ac, hc_agnes_ward$ac, 
+                 divisive_cluster$dc)
+  info_frame <- data.frame(type_clustering = cluster_type, 
+                           dif_coef = fit_coefs) %>%
+    arrange(desc(dif_coef)) %>%
+    rename(Algorithm=type_clustering,
+           `Clust. coef.`=dif_coef)
+  return(info_frame)
 }
 
 # Data preparation=============================================================
@@ -162,14 +213,14 @@ cluster_data_dta <- cluster_data_DTA_normed1994 %>%
 cluster_data_dta <- as.data.frame(cluster_data_dta)
 rownames(cluster_data_dta) <- cluster_data_dta$country
 
-cluster_data <- select(cluster_data, -country)
-clustering_object <- cluster_data %>%
+cluster_data_r <- select(cluster_data_r, -country)
+clustering_object_r <- cluster_data_r %>%
   cluster::agnes(method = "ward") # Compute hierachical clustering
 ###
 replication_dta <- do_clustering(
   cluster_data_DTA_normed1994, 
   cluster_vars, 
-  n_groups)
+  n_groups, clustering_method = "single")
 
 replication_r <- do_clustering(
   cluster_data_DTA_v3_means_normed, 
@@ -194,3 +245,5 @@ replication_full <- ggpubr::ggarrange(
 ggplot2::ggsave(plot = replication_full,
                 filename = "output/clustering_R.pdf", 
                 width = 12, height = 6)
+
+# Compare methods
