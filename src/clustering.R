@@ -25,7 +25,8 @@ do_clustering <- function(data_file,
   cluster_data <- data_file %>%
     dplyr::select(one_of("country", clustering_vars)) %>%
     dplyr::mutate(country=countrycode(country, 
-                                      "country.name", "country.name.de"))
+                                      "country.name", 
+                                      "country.name.de"))
   
   cluster_data <- as.data.frame(cluster_data)
   rownames(cluster_data) <- cluster_data$country
@@ -67,29 +68,19 @@ do_clustering <- function(data_file,
 #'   
 #'   @param raw_dat The data to be used for the clustering
 compare_clustering_types <- function(raw_dat, 
-                                     cluster_vars) {
-  
-  rownames(int_dat) <- int_dat$country
-  int_dat <- select(int_dat, -country)
-  int_dat <- get_diff_matrix(int_dat, raw_dat = TRUE)
-  diss_matrix <- get_diff_matrix(int_dat, raw_dat = FALSE)
+                                     clustering_vars) {
   
   hc_agnes_complete_linkage <- # Hierarchical clustering using Complete Linkage
-    do_clustering(diss_matrix, cluster_vars, 5, "complete")[["cluster_obj"]]
+    do_clustering(raw_dat, clustering_vars, 5, "complete")[["cluster_obj"]]
   hc_agnes_average_linkage <- # Hierarchical clustering using Average Linkage
-    do_clustering(diss_matrix, cluster_vars, 5, "average")[["cluster_obj"]]
+    do_clustering(raw_dat, clustering_vars, 5, "average")[["cluster_obj"]]
   hc_agnes_single_linkage <- # Hierarchical clustering using single Linkage
-    do_clustering(diss_matrix, cluster_vars, 5, "single")[["cluster_obj"]]
+    do_clustering(raw_dat, clustering_vars, 5, "single")[["cluster_obj"]]
   hc_agnes_ward <- # Hierarchical clustering using Ward's method
-    do_clustering(diss_matrix, cluster_vars, 5, "ward")[["cluster_obj"]]
+    do_clustering(raw_dat, clustering_vars, 5, "ward")[["cluster_obj"]]
   divisive_cluster <-  # divisive hierarchical clustering
-    do_clustering(int_dat, cluster_vars, 5, "divisive")[["cluster_obj"]]
-
-  # hc_agnes_complete_linkage <- agnes(diss_matrix, method = "complete") 
-  # hc_agnes_average_linkage <- agnes(diss_matrix, method = "average") 
-  # hc_agnes_single_linkage <- agnes(diss_matrix, method = "single") 
-  # hc_agnes_ward <- agnes(diss_matrix, method = "ward") 
-  # divisive_cluster <- diana(int_dat)
+    do_clustering(raw_dat, clustering_vars, 5, "divisive")[["cluster_obj"]]
+  
   cluster_type <- c("agnes_complete", "agnes_average", "agnes_single", 
                     "agnes_ward", "diana_divisive")
   fit_coefs <- c(hc_agnes_complete_linkage$ac, hc_agnes_average_linkage$ac, 
@@ -97,9 +88,9 @@ compare_clustering_types <- function(raw_dat,
                  divisive_cluster$dc)
   info_frame <- data.frame(type_clustering = cluster_type, 
                            dif_coef = fit_coefs) %>%
-    arrange(desc(dif_coef)) %>%
-    rename(Algorithm=type_clustering,
-           `Clust. coef.`=dif_coef)
+    dplyr::arrange(dplyr::desc(dif_coef)) %>%
+    dplyr::rename(Algorithm=type_clustering,
+                  `Clust. coef.`=dif_coef)
   return(info_frame)
 }
 
@@ -241,9 +232,21 @@ replication_full <- ggpubr::ggarrange(
   replication_dennis_plot_dta, replication_dennis_plot_R,
   nrow = 1, ncol = 2
 )
-# sub_grp <- cutree(as.hclust(clustering_object), k = n_groups)
+
 ggplot2::ggsave(plot = replication_full,
                 filename = "output/clustering_R.pdf", 
                 width = 12, height = 6)
 
-# Compare methods
+# Comparison of cluster algorithms=============================================
+
+cluster_comparison <- compare_clustering_types(
+  raw_dat = cluster_data_DTA_normed1994, 
+  clustering_vars = cluster_vars)
+
+write(
+  print(
+    xtable::xtable(cluster_comparison),
+    type = "html"
+  ), 
+  file = "output/cluster_comparison_dta.html"
+)
