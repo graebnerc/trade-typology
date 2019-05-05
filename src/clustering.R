@@ -104,24 +104,7 @@ cluster_vars <- c("zkof_econ_defacto", "zcoal_metal_export_share",
                   "zemployment_protect", "zubr", "zgov_exp_socprtc", 
                   "zgini_market", "ztax_corpcap", "ztax_estate_plus_wealth", 
                   "zfdi_to_gdp", "zsize_of_finance", "zkof_econ_dejure")
-###
-cluster_data_r <- cluster_data_DTA_v3_means_normed %>%
-  dplyr::select(one_of("country", cluster_vars)) %>%
-  dplyr::mutate(country=countrycode(country, 
-                                    "country.name", "country.name.de"))
 
-cluster_data_dta <- cluster_data_DTA_normed1994 %>%
-  dplyr::select(one_of("country", cluster_vars)) %>%
-  dplyr::mutate(country=countrycode(country, 
-                                    "country.name", "country.name.de"))
-
-cluster_data_dta <- as.data.frame(cluster_data_dta)
-rownames(cluster_data_dta) <- cluster_data_dta$country
-
-cluster_data_r <- select(cluster_data_r, -country)
-clustering_object_r <- cluster_data_r %>%
-  cluster::agnes(method = "ward") # Compute hierachical clustering
-###
 replication_dta <- do_clustering(
   cluster_data_DTA_normed1994, 
   cluster_vars, 
@@ -178,3 +161,5 @@ write(
   ), 
   file = "output/cluster_comparison_r.html"
 )
+
+# Visualization of group differences===========================================
