@@ -5,7 +5,6 @@ library(tidyverse)
 library(haven)
 library(factoextra)
 library(cluster)
-# TODO Check robustness wie in JEE
 # TODO Descriptive descriptions of the various clusters for section 4, just as in JEE
 # Function definitions=========================================================
 #' Clustering
@@ -116,7 +115,7 @@ cluster_data_DTA <- haven::read_dta("data/v34_cluster.dta")
 # TODO cluster_data_DTA weist deutlich mehr variablen auf als sich aus dem do file ergibt. Warum?
 
 # Process data=================================================================
-# Process data: Select countries-----------------------------------------------------
+# Process data: Select countries-----------------------------------------------
 drop_countries <- c("Canada", "Mexico", "New Zealand", "Turkey", "Switzerland",
                     "United States", "Iceland", "Australia", "Korea", "Norway",
                     "Japan", "Bulgaria", "Slovak Republic", "Lithuania")
@@ -131,7 +130,7 @@ cluster_data_DTA_v2 <- cluster_data_DTA %>%
 # hier werden die mittelwerte genommen
 cluster_data_DTA_v3_means <- cluster_data_DTA_v2 %>%
   dplyr::filter(year>=1994) %>%
-  select(-one_of("v1", "x", "year")) %>%
+  dplyr::select(-one_of("v1", "x", "year")) %>%
   dplyr::group_by(un_ccode) %>%
   dplyr::summarise_all(mean, na.rm=T) %>%
   dplyr::ungroup() %>%
@@ -178,7 +177,6 @@ cluster_data_DTA_normed1994 <- haven::read_dta("data/v34_cluster_mean_1994.dta")
 # Cluster implementation=======================================================
 
 # cluster_data_DTA_v3_means_normed
-# cluster_data_DTA_v3_nomeans_normed
 # cluster_data_DTA_normed1994
 
 n_groups <- 5
@@ -239,14 +237,28 @@ ggplot2::ggsave(plot = replication_full,
 
 # Comparison of cluster algorithms=============================================
 
-cluster_comparison <- compare_clustering_types(
+# The clustering based on the original dta file--------------------------------
+cluster_comparison_dta <- compare_clustering_types(
   raw_dat = cluster_data_DTA_normed1994, 
   clustering_vars = cluster_vars)
 
 write(
   print(
-    xtable::xtable(cluster_comparison),
+    xtable::xtable(cluster_comparison_dta),
     type = "html"
   ), 
   file = "output/cluster_comparison_dta.html"
+)
+
+# The clustering based on the re-created data set------------------------------
+cluster_comparison_r <- compare_clustering_types(
+  raw_dat = cluster_data_DTA_v3_means_normed, 
+  clustering_vars = cluster_vars)
+
+write(
+  print(
+    xtable::xtable(cluster_comparison_r),
+    type = "html"
+  ), 
+  file = "output/cluster_comparison_r.html"
 )
