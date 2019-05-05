@@ -163,3 +163,39 @@ write(
 )
 
 # Visualization of group differences===========================================
+
+# Cluster 1: primary goods (Latvia and Estonia)
+#  rents of natural resources are high (aber: vielleicht nur wegen niedrigem GDP?)
+#  share of oil exports is high
+#  complexity is low
+#  low investments in research and development
+#  The government expenditure on education is surprisingly high
+#  low degree of wage coordination and low government expenditures on social security.
+#  very low corporate, estate and all other wealth tax revenues are also remarkable
+#  FDI as in high road
+
+# Cluster 2: finance (Luxembourg)
+#  vast size of its financial sector (the share of the financial sector)
+#  share of foreign direct investments 
+#  lowest share of primary goods in exports
+#  weak regulation boosting 
+#  highest degree of economic globalisation in terms of de facto openness as well as in terms of de jure openness. 
+#  high corporate tax revenues, and high benefits in the case of unemployment.
+
+# Cluster 3: deregulated regime (United Kingdom, Ireland and Hungary)
+#  deregulated labour market and high income inequality. 
+#  43.5 percent of their former net income in case of unemployment and the employment protection (mean value of 1.5) is also very low. 
+#  low government expenditures on social security
+#  low tax revenues can be described as a strategy aiming to improve price competitiveness.
+
+# Cluster 4: less globalised model (Poland, Greece, Portugal, Slovakia, Spain, Italia, Slovenia and Czech Republic)
+#  exact counterpart to cluster 2 (see Table 2)
+#  low degree of international integration as reflected by low values in foreign direct investments and the economic globalisation index. 
+#  government expenditures on education and investments in research and development are considerably below the other trade regimes. 
+#  relatively strict labor market regulation.
+
+# Cluster 5: Technological leaders (France, Sweden, Finland, Denmark, Netherlands, Belgium, Germany and Austria)
+#  highest degree of economic complexity
+#  high degree of wage coordination and high government expenditures on social security.
+#  high investments in research and development
+
