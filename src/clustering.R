@@ -23,10 +23,10 @@ ictwss <- haven::read_dta("data/ictwss_short.dta") %>%
                 adjcov=as.double(adjcov),
                 coord=as.double(coord))
 
-cluster_data_R <- dplyr::full_join(ictwss, endownments, 
+cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments, 
                                    by=c("country"="location_code", "year"))
 
-cluster_data_DTA <- haven::read_dta("data/v34_cluster.dta")
+cluster_data_DTA_v1 <- haven::read_dta("data/v34_cluster.dta")
 
 # TODO cluster_data_DTA weist deutlich mehr variablen auf als sich aus dem do file ergibt. Warum?
 
@@ -38,13 +38,25 @@ drop_countries <- c("Canada", "Mexico", "New Zealand", "Turkey", "Switzerland",
 drop_countries <- countrycode::countrycode(drop_countries, 
                                            "country.name", "un")
 
-cluster_data_DTA_v2 <- cluster_data_DTA %>%
+cluster_data_DTA_v2 <- cluster_data_DTA_v1 %>%
+  dplyr::filter(!un_ccode %in% drop_countries,
+                !is.na(un_ccode))
+
+cluster_data_R_v2 <- cluster_data_R_v1 %>%
   dplyr::filter(!un_ccode %in% drop_countries,
                 !is.na(un_ccode))
 
 # Make means-------------------------------------------------------------------
 # hier werden die mittelwerte genommen
-cluster_data_DTA_v3_means <- cluster_data_DTA_v2 %>%
+cluster_data_DTA_v3 <- cluster_data_DTA_v2 %>%
+  dplyr::filter(year>=1994) %>%
+  dplyr::select(-one_of("v1", "x", "year")) %>%
+  dplyr::group_by(un_ccode) %>%
+  dplyr::summarise_all(mean, na.rm=T) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(country=countrycode(un_ccode, "un", "country.name"))
+
+cluster_data_R_v3 <- cluster_data_R_v2 %>%
   dplyr::filter(year>=1994) %>%
   dplyr::select(-one_of("v1", "x", "year")) %>%
   dplyr::group_by(un_ccode) %>%
@@ -54,7 +66,7 @@ cluster_data_DTA_v3_means <- cluster_data_DTA_v2 %>%
 
 # Process data: z standartization----------------------------------------------
 
-cluster_data_DTA_v3_means_normed <- cluster_data_DTA_v3_means %>%
+cluster_data_DTA_v4 <- cluster_data_DTA_v3 %>%
   dplyr::mutate(
     zkof_econ_defacto = scale(kof_econ_defacto)[,1], # egen zkof_econ_defacto =std( kof_econ_defacto)
     zgov_exp_to_gdp = scale(gov_exp_to_gdp)[,1], # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
@@ -87,13 +99,45 @@ cluster_data_DTA_v3_means_normed <- cluster_data_DTA_v3_means %>%
     ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1] # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
   )
 
-# should be the same as:
-cluster_data_DTA_normed1994 <- haven::read_dta("data/v34_cluster_mean_1994.dta")
+cluster_data_R_v4 <- cluster_data_R_v3 %>%
+  dplyr::mutate(
+    zkof_econ_defacto = scale(kof_econ_defacto)[,1], # egen zkof_econ_defacto =std( kof_econ_defacto)
+    zgov_exp_to_gdp = scale(gov_exp_to_gdp)[,1], # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
+    ztax_total = scale(tax_total)[,1], # egen ztax_total =std(tax_total)
+    zcomplexity_harv = scale(complexity_harv)[,1], # egen zcomplexity_harv =std( complexity_harv)
+    zindustrial_to_gdp = scale(industrial_to_gdp)[,1], # egen zindustrial_to_gdp =std( industrial_to_gdp)
+    zgerd = scale(gerd)[,1], # egen zgerd =std(gerd)
+    zict_ksh = scale(ict_ksh)[,1], # egen zict_ksh =std( ict_ksh)
+    zgov_exp_educ = scale(gov_exp_educ)[,1], # egen zgov_exp_educ =std( gov_exp_educ )
+    zadjusted_wage_share = scale(adjusted_wage_share)[,1], # egen zadjusted_wage_share =std( adjusted_wage_share )
+    zemployment_protect = scale(employment_protect)[,1], # egen zemployment_protect =std( employment_protect )
+    zubr = scale(ubr)[,1], # egen zubr =std( ubr )
+    zudens = scale(udens), # egen zudens =std( udens )
+    zgini_market = scale(gini_market)[,1], # egen zgini_market =std(gini_market )
+    ztax_ssc_employer = scale(tax_ssc_employer)[,1], # egen ztax_ssc_employer =std( tax_ssc_employer )
+    ztax_corpcap = scale(tax_corpcap)[,1], # egen ztax_corpcap =std( tax_corpcap )
+    ztax_estate_plus_wealth = scale(tax_estate_plus_wealth)[,1], # egen ztax_estate_plus_wealth =std( tax_estate_plus_wealth )
+    zfdi_to_gdp = scale(fdi_to_gdp)[,1], # egen zfdi_to_gdp =std( fdi_to_gdp )
+    zsize_of_finance = scale(size_of_finance)[,1], # egen zsize_of_finance =std( size_of_finance )
+    zkof_econ_dejure = scale(kof_econ_dejure)[,1], # egen zkof_econ_dejure =std( kof_econ_dejure )
+    zoil_exports_share = scale(oil_exports_share)[,1], # egen zoil_exports_share=std( oil_exports_share)
+    zprimary_exports_share_1 = scale(primary_exports_share_1)[,1], # egen zprimary_exports_share_1=std( primary_exports_share_1)
+    zexp_to_gdp = scale(exp_to_gdp)[,1], # egen zexp_to_gdp=std( exp_to_gdp)
+    zres_rents = scale(res_rents)[,1], # egen zres_rents =std( res_rents )
+    zcoal_metal_export_share = scale(coal_metal_export_share)[,1], # egen zcoal_metal_export_share =std( coal_metal_export_share )
+    zgov_exp_socprtc = scale(gov_exp_socprtc)[,1], # egen zgov_exp_socprtc =std(gov_exp_socprtc )
+    zcoord = scale(coord)[,1], # egen zcoord=std(coord)
+    zadjcov = scale(adjcov)[,1], # egen zadjcov=std(adjcov)
+    ztax_income = scale(tax_income)[,1], # egen ztax_income =std(tax_income)
+    ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1] # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
+  )
+
+# data overview:
+cluster_data_DTA_pre_proc <- haven::read_dta("data/v34_cluster_mean_1994.dta")
+cluster_data_DTA_post_proc <- cluster_data_DTA_v4
+cluster_data_R <- cluster_data_R_v4
 
 # Cluster implementation=======================================================
-
-# cluster_data_DTA_v3_means_normed
-# cluster_data_DTA_normed1994
 
 n_groups <- 5
 
@@ -105,53 +149,79 @@ cluster_vars <- c("zkof_econ_defacto", "zcoal_metal_export_share",
                   "zgini_market", "ztax_corpcap", "ztax_estate_plus_wealth", 
                   "zfdi_to_gdp", "zsize_of_finance", "zkof_econ_dejure")
 
-replication_dta <- do_clustering(
-  cluster_data_DTA_normed1994, 
+replication_dta_pre <- do_clustering(
+  cluster_data_DTA_pre_proc, 
   cluster_vars, 
-  n_groups, clustering_method = "single")
+  n_groups, clustering_method = "ward")
+
+replication_dta_post <- do_clustering(
+  cluster_data_DTA_post_proc, 
+  cluster_vars, 
+  n_groups, clustering_method = "ward")
 
 replication_r <- do_clustering(
-  cluster_data_DTA_v3_means_normed, 
+  cluster_data_R, # hier muesste R hin alt: cluster_data_DTA_v3_means_normed
   cluster_vars, 
   n_groups)
+
+
 # TODO Die beiden sind unterschiedlich, aber es ist nicht klar warum. Scheint mit unterschieldicher Skalierung zu tun haben...
-replication_dennis_plot_dta <-  replication_dta$cluster_plot + 
-  ggtitle("Clustering Ergebnis in R (dta file)") +
+replication_dennis_plot_dta_pre <-  replication_dta_pre$cluster_plot + 
+  ggtitle("Clustering Ergebnis (dta, Dennis' Aufbereitung") +
   xlab("Länder") + ylab("")
-replication_dennis_plot_dta
+replication_dennis_plot_dta_pre
+
+replication_dennis_plot_dta_pre <- replication_dta_post$cluster_plot + 
+  ggtitle("Clustering Ergebnis (dta, Dennis' Aufbereitung") +
+  xlab("Länder") + ylab("")
+replication_dennis_plot_dta_pre
 
 replication_dennis_plot_R <-  replication_r$cluster_plot + 
-  ggtitle("Clustering Ergebnis in R (Werte in R normalisiert)") +
+  ggtitle("Clustering Ergebnis (in R gebaute Daten)") +
   xlab("Länder") + ylab("")
 replication_dennis_plot_R
 
 replication_full <- ggpubr::ggarrange(
-  replication_dennis_plot_dta, replication_dennis_plot_R,
-  nrow = 1, ncol = 2
+  replication_dennis_plot_dta_pre, replication_dennis_plot_dta_pre,
+  replication_dennis_plot_R,
+  nrow = 1, ncol = 3
 )
 
 ggplot2::ggsave(plot = replication_full,
                 filename = "output/clustering_R.pdf", 
-                width = 12, height = 6)
+                width = 16, height = 6)
 
 # Comparison of cluster algorithms=============================================
 
-# The clustering based on the original dta file--------------------------------
-cluster_comparison_dta <- compare_clustering_types(
-  raw_dat = cluster_data_DTA_normed1994, 
+# The clustering based on dta data and processing in R-------------------------
+cluster_comparison_dta_post <- compare_clustering_types(
+  raw_dat = replication_dta_post, 
   clustering_vars = cluster_vars)
 
 write(
   print(
-    xtable::xtable(cluster_comparison_dta),
+    xtable::xtable(cluster_comparison_dta_post),
     type = "html"
   ), 
-  file = "output/cluster_comparison_dta.html"
+  file = "output/cluster_comparison_dta_post.html"
+)
+
+# The clustering based on processed dta data-----------------------------------
+cluster_comparison_dta_pre <- compare_clustering_types(
+  raw_dat = replication_dta_pre, 
+  clustering_vars = cluster_vars)
+
+write(
+  print(
+    xtable::xtable(cluster_comparison_dta_pre),
+    type = "html"
+  ), 
+  file = "output/cluster_comparison_dta_pre.html"
 )
 
 # The clustering based on the re-created data set------------------------------
 cluster_comparison_r <- compare_clustering_types(
-  raw_dat = cluster_data_DTA_v3_means_normed, 
+  raw_dat = cluster_data_R, # hier muesste R hin alt: cluster_data_DTA_v3_means_normed
   clustering_vars = cluster_vars)
 
 write(
@@ -164,9 +234,9 @@ write(
 
 # Visualization of group differences===========================================
 
-# DTA data
-cluster_data_DTA_normed1994
-# R data
+head(replication_dta_pre) # DTA data (pre-processed)
+head(replication_dta_post) # DTA data (post-processed)
+head(cluster_data_R) # R data 
 
 
 # Cluster 1: primary goods (Latvia and Estonia)
