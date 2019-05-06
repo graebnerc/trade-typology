@@ -18,13 +18,18 @@ endownments <- data.table::fread(
   paste0("data/dimension_endownment_data_", data_source, ".csv")
 )
 ictwss <- haven::read_dta("data/ictwss_short.dta") %>%
-  dplyr::mutate(country=countrycode(country, "country.name", "iso3c"),
-                year=as.double(year),
-                adjcov=as.double(adjcov),
-                coord=as.double(coord))
+  dplyr::mutate(
+    country=countrycode::countrycode(country, "country.name", "iso3c"),
+    year=as.double(year),
+    adjcov=as.double(adjcov),
+    coord=as.double(coord)
+  )
 
 cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments, 
-                                   by=c("country"="location_code", "year"))
+                                   by=c("country"="location_code", "year")) %>%
+  dplyr::mutate(
+    un_ccode=countrycode::countrycode(country, "iso3c", "un")
+    )
 
 cluster_data_DTA_v1 <- haven::read_dta("data/v34_cluster.dta")
 
@@ -101,35 +106,35 @@ cluster_data_DTA_v4 <- cluster_data_DTA_v3 %>%
 
 cluster_data_R_v4 <- cluster_data_R_v3 %>%
   dplyr::mutate(
-    zkof_econ_defacto = scale(kof_econ_defacto)[,1], # egen zkof_econ_defacto =std( kof_econ_defacto)
-    zgov_exp_to_gdp = scale(gov_exp_to_gdp)[,1], # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
-    ztax_total = scale(tax_total)[,1], # egen ztax_total =std(tax_total)
-    zcomplexity_harv = scale(complexity_harv)[,1], # egen zcomplexity_harv =std( complexity_harv)
-    zindustrial_to_gdp = scale(industrial_to_gdp)[,1], # egen zindustrial_to_gdp =std( industrial_to_gdp)
-    zgerd = scale(gerd)[,1], # egen zgerd =std(gerd)
-    zict_ksh = scale(ict_ksh)[,1], # egen zict_ksh =std( ict_ksh)
-    zgov_exp_educ = scale(gov_exp_educ)[,1], # egen zgov_exp_educ =std( gov_exp_educ )
-    zadjusted_wage_share = scale(adjusted_wage_share)[,1], # egen zadjusted_wage_share =std( adjusted_wage_share )
-    zemployment_protect = scale(employment_protect)[,1], # egen zemployment_protect =std( employment_protect )
-    zubr = scale(ubr)[,1], # egen zubr =std( ubr )
-    zudens = scale(udens), # egen zudens =std( udens )
-    zgini_market = scale(gini_market)[,1], # egen zgini_market =std(gini_market )
-    ztax_ssc_employer = scale(tax_ssc_employer)[,1], # egen ztax_ssc_employer =std( tax_ssc_employer )
-    ztax_corpcap = scale(tax_corpcap)[,1], # egen ztax_corpcap =std( tax_corpcap )
-    ztax_estate_plus_wealth = scale(tax_estate_plus_wealth)[,1], # egen ztax_estate_plus_wealth =std( tax_estate_plus_wealth )
-    zfdi_to_gdp = scale(fdi_to_gdp)[,1], # egen zfdi_to_gdp =std( fdi_to_gdp )
-    zsize_of_finance = scale(size_of_finance)[,1], # egen zsize_of_finance =std( size_of_finance )
-    zkof_econ_dejure = scale(kof_econ_dejure)[,1], # egen zkof_econ_dejure =std( kof_econ_dejure )
+    ##zkof_econ_defacto = scale(kof_econ_defacto)[,1], # egen zkof_econ_defacto =std( kof_econ_defacto)
+    ##zgov_exp_to_gdp = scale(gov_exp_to_gdp)[,1], # egen zgov_exp_to_gdp =std( gov_exp_to_gdp)
+    ##ztax_total = scale(tax_total)[,1], # egen ztax_total =std(tax_total)
+    ##zcomplexity_harv = scale(complexity_harv)[,1], # egen zcomplexity_harv =std( complexity_harv)
+    ##zindustrial_to_gdp = scale(industrial_to_gdp)[,1], # egen zindustrial_to_gdp =std( industrial_to_gdp)
+    ##zgerd = scale(gerd)[,1], # egen zgerd =std(gerd)
+    ###zict_ksh = scale(ict_ksh)[,1], # egen zict_ksh =std( ict_ksh)
+    ##zgov_exp_educ = scale(gov_exp_educ)[,1], # egen zgov_exp_educ =std( gov_exp_educ )
+    ##zadjusted_wage_share = scale(adjusted_wage_share)[,1], # egen zadjusted_wage_share =std( adjusted_wage_share )
+    ##zemployment_protect = scale(employment_protect)[,1], # egen zemployment_protect =std( employment_protect )
+    ##zubr = scale(ubr)[,1], # egen zubr =std( ubr )
+    ##zudens = scale(udens), # egen zudens =std( udens )
+    ##zgini_market = scale(gini_market)[,1], # egen zgini_market =std(gini_market )
+    ##ztax_ssc_employer = scale(tax_ssc_employer)[,1], # egen ztax_ssc_employer =std( tax_ssc_employer )
+    ##ztax_corpcap = scale(tax_corpcap)[,1], # egen ztax_corpcap =std( tax_corpcap )
+    ##ztax_estate_plus_wealth = scale(tax_estate_plus_wealth)[,1], # egen ztax_estate_plus_wealth =std( tax_estate_plus_wealth )
+    ##zfdi_to_gdp = scale(fdi_to_gdp)[,1], # egen zfdi_to_gdp =std( fdi_to_gdp )
+    ##zsize_of_finance = scale(size_of_finance)[,1], # egen zsize_of_finance =std( size_of_finance )
+    ##zkof_econ_dejure = scale(kof_econ_dejure)[,1], # egen zkof_econ_dejure =std( kof_econ_dejure )
     zoil_exports_share = scale(oil_exports_share)[,1], # egen zoil_exports_share=std( oil_exports_share)
     zprimary_exports_share_1 = scale(primary_exports_share_1)[,1], # egen zprimary_exports_share_1=std( primary_exports_share_1)
     zexp_to_gdp = scale(exp_to_gdp)[,1], # egen zexp_to_gdp=std( exp_to_gdp)
     zres_rents = scale(res_rents)[,1], # egen zres_rents =std( res_rents )
     zcoal_metal_export_share = scale(coal_metal_export_share)[,1], # egen zcoal_metal_export_share =std( coal_metal_export_share )
-    zgov_exp_socprtc = scale(gov_exp_socprtc)[,1], # egen zgov_exp_socprtc =std(gov_exp_socprtc )
+    ##zgov_exp_socprtc = scale(gov_exp_socprtc)[,1], # egen zgov_exp_socprtc =std(gov_exp_socprtc )
     zcoord = scale(coord)[,1], # egen zcoord=std(coord)
-    zadjcov = scale(adjcov)[,1], # egen zadjcov=std(adjcov)
-    ztax_income = scale(tax_income)[,1], # egen ztax_income =std(tax_income)
-    ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1] # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
+    zadjcov = scale(adjcov)[,1]#, # egen zadjcov=std(adjcov)
+    ##ztax_income = scale(tax_income)[,1], # egen ztax_income =std(tax_income)
+    ##ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1] # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
   )
 
 # data overview:
@@ -195,7 +200,7 @@ ggplot2::ggsave(plot = replication_full,
 
 # The clustering based on dta data and processing in R-------------------------
 cluster_comparison_dta_post <- compare_clustering_types(
-  raw_dat = replication_dta_post, 
+  raw_dat = cluster_data_DTA_post_proc, 
   clustering_vars = cluster_vars)
 
 write(
@@ -208,7 +213,7 @@ write(
 
 # The clustering based on processed dta data-----------------------------------
 cluster_comparison_dta_pre <- compare_clustering_types(
-  raw_dat = replication_dta_pre, 
+  raw_dat = cluster_data_DTA_pre_proc, 
   clustering_vars = cluster_vars)
 
 write(
@@ -234,8 +239,8 @@ write(
 
 # Visualization of group differences===========================================
 
-head(replication_dta_pre) # DTA data (pre-processed)
-head(replication_dta_post) # DTA data (post-processed)
+head(cluster_data_DTA_pre_proc) # DTA data (pre-processed)
+head(cluster_data_DTA_post_proc) # DTA data (post-processed)
 head(cluster_data_R) # R data 
 
 
