@@ -273,9 +273,21 @@ write(
 head(cluster_data_DTA_pre_proc) # DTA data (pre-processed)
 head(cluster_data_DTA_post_proc) # DTA data (post-processed)
 head(cluster_data_R) # R data 
+data_taxonomy <- cluster_data_DTA_pre_proc
 
 vars_all <- c(rel_vars, nrel_vars)
 sort(vars_all)
+
+clustering <- list(
+  "Cluster_1" = c("Latvia", "Estonia"),
+  "Cluster_2" = c("Luxembourg"),
+  "Cluster_3" = c("United Kingdom", "Ireland", "Hungary"),
+  "Cluster_4" = c("Poland", "Greece", "Portugal", "Slovakia", "Spain", 
+                  "Italia", "Slovenia", "Czech Republic"),
+  "Cluster_5" = c("France", "Sweden", "Finland", "Denmark", "Netherlands", 
+                  "Belgium", "Germany", "Austria")
+)
+
 # Cluster 1: primary goods (Latvia and Estonia)
 #  rents of natural resources are high (aber: vielleicht nur wegen niedrigem GDP?)
 #  share of oil exports is high
@@ -285,30 +297,50 @@ sort(vars_all)
 #  low degree of wage coordination and low government expenditures on social security.
 #  very low corporate, estate and all other wealth tax revenues are also remarkable
 #  FDI as in high road
-
+cluster_1_vars <- c("res_rents", "oil_exports_share", "complexity_harv", 
+                    "gerd", "gov_exp_educ", "coord", "tax_corpcap", 
+                    "tax_estate_plus_wealth", "fdi_to_gdp")
 
 # Cluster 2: finance (Luxembourg)
 #  vast size of its financial sector (the share of the financial sector)
 #  share of foreign direct investments 
 #  lowest share of primary goods in exports
-#  weak regulation boosting 
+#  weak regulation  
 #  highest degree of economic globalisation in terms of de facto openness as well as in terms of de jure openness. 
 #  high corporate tax revenues, and high benefits in the case of unemployment.
+cluster_2_vars <- c("size_of_finance", "fdi_to_gdp", "primary_exports_share_1",
+                    "employment_protect", "kof_econ_defacto", 
+                    "kof_econ_dejure", "tax_corpcap", "ubr")
 
 # Cluster 3: deregulated regime (United Kingdom, Ireland and Hungary)
 #  deregulated labour market and high income inequality. 
 #  43.5 percent of their former net income in case of unemployment and the employment protection (mean value of 1.5) is also very low. 
 #  low government expenditures on social security
 #  low tax revenues can be described as a strategy aiming to improve price competitiveness.
+cluster_3_vars <- c("employment_protect", "gini_market", "ubr",
+                    "gov_exp_socprtc","tax_income", "tax_rev_to_gdp")
 
 # Cluster 4: less globalised model (Poland, Greece, Portugal, Slovakia, Spain, Italia, Slovenia and Czech Republic)
 #  exact counterpart to cluster 2 (see Table 2)
 #  low degree of international integration as reflected by low values in foreign direct investments and the economic globalisation index. 
 #  government expenditures on education and investments in research and development are considerably below the other trade regimes. 
 #  relatively strict labor market regulation.
+cluster_4_vars <- c("fdi_to_gdp", "kof_econ_defacto", "kof_econ_dejure", 
+                    "gerd", "gov_exp_educ", "employment_protect")
 
 # Cluster 5: Technological leaders (France, Sweden, Finland, Denmark, Netherlands, Belgium, Germany and Austria)
 #  highest degree of economic complexity
 #  high degree of wage coordination and high government expenditures on social security.
 #  high investments in research and development
+cluster_5_vars <- c("complexity_harv", "coord", "gov_exp_socprtc", "gerd")
 
+data_taxonomy <- data_taxonomy %>%
+  dplyr::mutate(
+    cluster=ifelse(
+      country %in% clustering[["Cluster_1"]], "C1", 
+      ifelse(country %in% clustering[["Cluster_2"]], "C2", 
+             ifelse(country %in% clustering[["Cluster_3"]], "C3", 
+                    ifelse(country %in% clustering[["Cluster_4"]], "C4", 
+                           ifelse(country %in% clustering[["Cluster_5"]], "C5",
+                                  NA)))))
+    )
