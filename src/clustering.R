@@ -283,7 +283,7 @@ clustering <- list(
   "Cluster_2" = c("Luxembourg"),
   "Cluster_3" = c("United Kingdom", "Ireland", "Hungary"),
   "Cluster_4" = c("Poland", "Greece", "Portugal", "Slovakia", "Spain", 
-                  "Italia", "Slovenia", "Czech Republic"),
+                  "Italy", "Slovenia", "Czech Republic"),
   "Cluster_5" = c("France", "Sweden", "Finland", "Denmark", "Netherlands", 
                   "Belgium", "Germany", "Austria")
 )
@@ -334,6 +334,14 @@ cluster_4_vars <- c("fdi_to_gdp", "kof_econ_defacto", "kof_econ_dejure",
 #  high investments in research and development
 cluster_5_vars <- c("complexity_harv", "coord", "gov_exp_socprtc", "gerd")
 
+clustering_vars <- list(
+  "C1" = cluster_1_vars,
+  "C2" = cluster_2_vars,
+  "C3" = cluster_3_vars,
+  "C4" = cluster_4_vars,
+  "C5" = cluster_5_vars
+)
+
 data_taxonomy <- data_taxonomy %>%
   dplyr::mutate(
     cluster=ifelse(
@@ -344,3 +352,123 @@ data_taxonomy <- data_taxonomy %>%
                            ifelse(country %in% clustering[["Cluster_5"]], "C5",
                                   NA)))))
     )
+
+# Cluster 1: Taxonomy plot-----------------------------------------------------
+
+#' Setup data for cluster taxonomy
+#' 
+#' Takes the taxonomy data and returns a data frame that can be used
+#'   to create figures illustrating the differences among clusters.
+#'   
+#' @param data_used The data used
+#' @param cluster considered The name of the cluster (e.g. C1 or C2); must be
+#'   a character with a leading C, as in data_used.
+#' @param cluster_variables A list with information about the variables to 
+#'   be included in the final data. Names of the list should be clusters as 
+#'   in \code{cluster}, the items the names of the variables as strings.
+#' @return A data table with the data as to be used by ggplot2.
+setup_taxonomy_data <- function(data_used,
+                                cluster_considered, 
+                                cluster_variables){
+  if (!cluster_considered %in% data_used[["cluster"]]){
+    stop("Cluster considered not present in data set!")
+  }
+  cluster_data <- data_used %>%
+    dplyr::select(one_of("country", "cluster", 
+                         cluster_variables[[cluster_considered]])) %>%
+    dplyr::mutate(cluster = ifelse(cluster == cluster_considered, 
+                            cluster_considered, "Rest")) %>%
+    dplyr::group_by(cluster) %>%
+    dplyr::summarise_if(is.numeric, mean, na.rm=TRUE) %>%
+    dplyr::ungroup()
+  # TODO check for NA
+  return(cluster_data)
+}
+
+cluster_1_data <- setup_taxonomy_data(data_taxonomy, "C1", clustering_vars)
+cluster_2_data <- setup_taxonomy_data(data_taxonomy, "C2", clustering_vars)
+cluster_3_data <- setup_taxonomy_data(data_taxonomy, "C3", clustering_vars)
+cluster_4_data <- setup_taxonomy_data(data_taxonomy, "C4", clustering_vars)
+cluster_5_data <- setup_taxonomy_data(data_taxonomy, "C5", clustering_vars)
+
+
+#' @param return_full_plot If TRUE (the default) function combines the single
+#'  plots into one full plot (using \code{ggpubr:ggarrange}. If FALSE a list of
+#'  single plots is returned.)
+make_plots <- function(data_used,
+                       cluster_considered, 
+                       cluster_variables,
+                       variable_subset=FALSE,
+                       return_full_plot=TRUE){
+  if (!(FALSE %in% variable_subset)){
+    cluster_variables <- variable_subset
+  }
+  
+  cluster_data <-  setup_taxonomy_data(data_used, 
+                                       cluster_considered, 
+                                       cluster_variables)
+  
+  plots_to_do <- names(cluster_data)[2:length(names(cluster_data))]
+  final_plots <- list()
+  
+  for (p in plots_to_do){
+    print(p)
+    final_plots[[p]] <- ggplot(cluster_data,
+                               aes_string(x="cluster", 
+                                          y=p)) +
+      geom_bar(stat = "identity") +
+      ggtitle(p) + 
+      scale_y_continuous(expand = c(0, 0))
+      theme_bw() + 
+      theme(panel.border = element_blank(),
+            axis.line = element_line())
+  }
+  if (return_full_plot){
+    full_plot <- ggpubr::ggarrange(
+      plotlist = final_plots, 
+      ncol = length(names(final_plots)))
+    return(full_plot)
+  } else {
+    return(final_plots)
+  }
+}
+
+c1_plots <- make_plots(data_taxonomy, "C1", clustering_vars)
+ggsave(plot = c1_plots, filename = "output/TEST.pdf", width = length(c1_plots)*2.5, height = 8)
+
+c1plot <- ggplot(cluster_1_data, aes_string(x="cluster", y="res_rents")) + 
+  geom_bar(stat = "identity")
+c1plot
+
+c1plot <- ggplot(gather(cluster_1_data, variable, value, -cluster), 
+                 aes_string(
+                   x="variable", y="value", 
+                   group="cluster", color="cluster", fill="cluster")
+                 ) + 
+  geom_bar(
+    stat = "identity",
+    position=position_dodge()
+    ) + 
+  scale_y_continuous(expand = c(0,0)) +
+  ggtitle(paste0("Cluster 1", " compared to the rest")) +
+  theme_bw() +
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "bottom",
+        legend.title = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_line()
+        )
+c1plot
+
+# besser alles einzeln mit for loop, breite dann mit names(data)*3oder so machen
+# gather(variable, mean_value, -c_group)
+head(macro_data_agg_core_mean)
+
+complexity <- make_single_plot(macro_data_core_peri_sum,
+                               "Complexity",
+                               # y_limit = c(40, 65),
+                               leg_pos = "none",
+                               y_label = "Economic complexity index"
+)
+complexity 
