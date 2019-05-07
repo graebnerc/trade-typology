@@ -426,6 +426,3 @@ for (i in 1:5){
          filename = paste0("output/", cluster_considered, "_barplot.pdf"), 
          width = length(current_plots)*2.5, height = 8)
 }
-
-
-
