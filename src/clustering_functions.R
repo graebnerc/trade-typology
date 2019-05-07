@@ -13,10 +13,7 @@ do_clustering <- function(data_file,
                           nb_groups, 
                           clustering_method="ward"){
   cluster_data <- data_file %>%
-    dplyr::select(one_of("country", clustering_vars)) %>%
-    dplyr::mutate(country=countrycode(country, 
-                                      "country.name", 
-                                      "country.name.de"))
+    dplyr::select(one_of("country", clustering_vars)) 
   
   cluster_data <- as.data.frame(cluster_data)
   rownames(cluster_data) <- cluster_data$country
