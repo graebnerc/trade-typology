@@ -39,7 +39,7 @@ missing_vars <- c(
 new_macro_data <- data.table::fread("data/Clustering_data_Dennis_new.csv") %>%
   select(one_of("year", "country", missing_vars)) %>%
   dplyr::mutate(
-    Country=countrycode::countrycode(country, "country.name", "iso3c")
+    country=countrycode::countrycode(country, "country.name", "iso3c")
   ) %>%
   dplyr::rename(
     gerd=GERD,
@@ -208,8 +208,6 @@ replication_r <- do_clustering(
   cluster_vars, 
   n_groups)
 
-
-# TODO Die beiden sind unterschiedlich, aber es ist nicht klar warum. Scheint mit unterschieldicher Skalierung zu tun haben...
 replication_dennis_plot_dta_pre <-  replication_dta_pre$cluster_plot + 
   ggtitle("Clustering Ergebnis (dta, Dennis' Aufbereitung") +
   xlab("Länder") + ylab("")
