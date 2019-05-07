@@ -279,7 +279,7 @@ write(
 head(cluster_data_DTA_pre_proc) # DTA data (pre-processed)
 head(cluster_data_DTA_post_proc) # DTA data (post-processed)
 head(cluster_data_R) # R data 
-data_taxonomy <- cluster_data_DTA_pre_proc
+data_taxonomy <- cluster_data_R
 
 vars_all <- c(rel_vars, nrel_vars)
 sort(vars_all)
