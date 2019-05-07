@@ -18,6 +18,7 @@ endownments <- data.table::fread(
   paste0("data/dimension_endownment_data_", data_source, ".csv")
 ) %>%
   dplyr::select(-exp_to_gdp)
+
 ictwss <- haven::read_dta("data/ictwss_short.dta") %>%
   dplyr::mutate(
     country=countrycode::countrycode(country, "country.name", "iso3c"),
@@ -27,24 +28,31 @@ ictwss <- haven::read_dta("data/ictwss_short.dta") %>%
   ) 
 
 missing_vars <- c(
-  "kof_econ_defacto", "gov_exp_to_gdp", "tax_total", "complexity_harv", 
-  "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ",  "tax_rev_to_gdp",
+  "KOF_econ_defacto", "gov_exp_to_GDP", "tax_total", "complexity_harv", 
+  "industrial_to_gdp", "GERD", "ict_ksh", "gov_exp_educ",  "tax_rev_to_gdp",
   "adjusted_wage_share", "employment_protect", "ubr", "udens", "gini_market",
-  "tax_ssc_employer", "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", 
-  "size_of_finance", "kof_econ_dejure", "exp_to_gdp", "res_rents", 
-  "gov_exp_socprtc", "tax_income"
+  "tax_ssc_employer", "tax_corpcap", "Tax_Estate_plus_Wealth", "fdi_to_gdp", 
+  "size_of_finance", "KOF_econ_dejure", "exp_to_gdp", "gov_exp_socprtc", 
+  "tax_income"
 )
 
-macro_data <- data.table::fread("data/Macro_data_trade-v34.csv") %>%
-  select(one_of("Year", "Country", missing_vars)) %>%
+new_macro_data <- data.table::fread("data/Clustering_data_Dennis_new.csv") %>%
+  select(one_of("year", "country", missing_vars)) %>%
   dplyr::mutate(
-    Country=countrycode::countrycode(Country, "country.name", "iso3c")
-    )
+    Country=countrycode::countrycode(country, "country.name", "iso3c")
+  ) %>%
+  dplyr::rename(
+    gerd=GERD,
+    kof_econ_dejure=KOF_econ_dejure,
+    kof_econ_defacto=KOF_econ_defacto,
+    gov_exp_to_gdp=gov_exp_to_GDP,
+    tax_estate_plus_wealth=Tax_Estate_plus_Wealth
+  )
 
 cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments, 
                                    by=c("country"="location_code", "year")) %>%
-  dplyr::left_join(., macro_data, 
-                   by=c("country"="Country", "year"="Year")) %>%
+  dplyr::left_join(., new_macro_data, 
+                   by=c("country", "year")) %>%
   dplyr::mutate(
     un_ccode=countrycode::countrycode(country, "iso3c", "un")
     )
