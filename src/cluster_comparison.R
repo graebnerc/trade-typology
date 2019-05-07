@@ -65,8 +65,6 @@ cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments,
 
 cluster_data_DTA_v1 <- haven::read_dta("data/v34_cluster.dta")
 
-# TODO cluster_data_DTA weist deutlich mehr variablen auf als sich aus dem do file ergibt. Warum?
-
 # Process data=================================================================
 # Process data: Select countries-----------------------------------------------
 drop_countries <- c("Canada", "Mexico", "New Zealand", "Turkey", "Switzerland",
@@ -103,7 +101,6 @@ cluster_data_R_v3 <- cluster_data_R_v2 %>%
 
 # Process data: z standartization----------------------------------------------
 # TODO exp_to_gdp ist nicht mehr drinnen, ist das nicht komisch?
-# TODO maybe remove all nrel_vars?
 rel_vars <- c("kof_econ_defacto", "coal_metal_export_share", 
               "oil_exports_share", "primary_exports_share_1", 
               "res_rents", "complexity_harv", "industrial_to_gdp", 
