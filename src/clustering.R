@@ -4,6 +4,7 @@ library(data.table)
 library(tidyverse)
 library(haven)
 library(factoextra)
+library(NbClust)
 library(cluster)
 # TODO Descriptive descriptions of the various clusters for section 4, just as in JEE
 # Function definitions=========================================================
@@ -47,7 +48,7 @@ write(
 )
 
 # Test for number of clusters==================================================
-# TODO Check best number of clusters
+source("src/nb_clusters.R")
 
 # Illustration of group differences============================================
 
