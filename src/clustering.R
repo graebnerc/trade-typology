@@ -20,13 +20,15 @@ cluster_data <- cluster_data_R_v4
 n_groups <- 5
 
 clustering_list <- do_clustering(
-  cluster_data, # hier muesste R hin alt: cluster_data_DTA_v3_means_normed
+  dplyr::mutate(cluster_data, country=ifelse(
+    country=="United Kingdom", "UK", country)),
   cluster_vars, 
   n_groups)
 
 clustering_dendogram <-  clustering_list$cluster_plot + 
-  ggtitle("Clustering Ergebnis (in R gebaute Daten)") +
-  xlab("Länder") + ylab("")
+  ggtitle("Result of the hierarchical clustering") +
+  xlab("Länder") + ylab("") +
+  theme(axis.title = element_blank())
 clustering_dendogram
 
 ggplot2::ggsave(plot = clustering_dendogram,
@@ -35,13 +37,13 @@ ggplot2::ggsave(plot = clustering_dendogram,
 
 # Comparison of cluster algorithms=============================================
 
-cluster_comparison_r <- compare_clustering_types(
+cluster_comparison <- compare_clustering_types(
   raw_dat = cluster_data, 
   clustering_vars = cluster_vars)
 
 write(
   print(
-    xtable::xtable(cluster_comparison_r),
+    xtable::xtable(cluster_comparison),
     type = "html"
   ), 
   file = "output/cluster_algorithms_comparison.html"
