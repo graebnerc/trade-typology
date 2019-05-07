@@ -155,18 +155,22 @@ make_plots <- function(data_used,
     print(p)
     final_plots[[p]] <- ggplot(cluster_data,
                                aes_string(x="cluster", 
-                                          y=p)) +
+                                          y=p,
+                                          fill="cluster",
+                                          color="cluster")) +
       geom_bar(stat = "identity") +
       ggtitle(p) + 
       scale_y_continuous(expand = c(0, 0))
     theme_bw() + 
       theme(panel.border = element_blank(),
-            axis.line = element_line())
+            axis.line = element_line(),
+            legend.position = "none")
   }
   if (return_full_plot){
     full_plot <- ggpubr::ggarrange(
       plotlist = final_plots, 
-      ncol = length(names(final_plots)))
+      ncol = length(names(final_plots)), 
+      legend = "none")
     return(full_plot)
   } else {
     return(final_plots)
