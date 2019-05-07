@@ -64,7 +64,7 @@ clustering <- list(
   "Cluster_2" = c("Luxembourg"),
   "Cluster_3" = c("United Kingdom", "Ireland", "Hungary"),
   "Cluster_4" = c("Poland", "Greece", "Portugal", "Slovakia", "Spain", 
-                  "Italy", "Slovenia", "Czech Republic"),
+                  "Italy", "Slovenia", "Czech Republic", "Czechia"),
   "Cluster_5" = c("France", "Sweden", "Finland", "Denmark", "Netherlands", 
                   "Belgium", "Germany", "Austria")
 )
