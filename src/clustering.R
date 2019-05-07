@@ -299,7 +299,7 @@ clustering <- list(
 #  FDI as in high road
 cluster_1_vars <- c(
   "res_rents", "oil_exports_share", "primary_exports_share_1",
-                    "complexity_harv", "gerd", "gov_exp_educ", #Industry
+                    "complexity_harv", "gerd", "gov_exp_educ", "industrial_to_gdp",
                     "coord", "gov_exp_socprtc",
                     "tax_corpcap", "tax_estate_plus_wealth", "size_of_finance"
   )
@@ -347,7 +347,7 @@ cluster_4_vars <- c(
 #  high degree of wage coordination and high government expenditures on social security.
 #  high investments in research and development
 cluster_5_vars <- c(
-  "complexity_harv", "gerd", # TODO Add industry output in relation to GDP
+  "complexity_harv", "gerd", "industrial_to_gdp", 
   "coord", "gov_exp_socprtc"
   )
 
@@ -371,6 +371,45 @@ data_taxonomy <- data_taxonomy %>%
     )
 
 # Taxonomy table---------------------------------------------------------------
+table_order <- c("kof_econ_defacto", 
+                 "coal_metal_export_share",
+                 "oil_exports_share",
+                 "primary_exports_share_1",
+                 "res_rents",
+                 "complexity_harv",
+                 "industrial_to_gdp",
+                 "gerd",
+                 "ict_ksh",
+                 "gov_exp_educ",
+                 "coord",
+                 "employment_protect",
+                 "ubr", 
+                 "gov_exp_socprtc",
+                 "gini_market",
+                 "tax_corpcap",
+                 "tax_estate_plus_wealth",
+                 "fdi_to_gdp",
+                 "size_of_finance",
+                 "kof_econ_dejure")
+
+taxonomy_table_data <- data_taxonomy %>%
+  dplyr::select(-country) %>%
+  dplyr::group_by(cluster) %>%
+  dplyr::summarise_all(mean) %>%
+  dplyr::ungroup() %>%
+  tidyr::gather(variable, value, -cluster) %>%
+  tidyr::spread(cluster, value) %>%
+  dplyr::slice(match(table_order, variable))
+head(taxonomy_table_data)
+
+write(
+  print(
+    xtable::xtable(taxonomy_table_data),
+    type = "html"
+  ), 
+  file = "output/taxonomy_table.html"
+)
+
 
 # Taxonomy plots---------------------------------------------------------------
 for (i in 1:5){
