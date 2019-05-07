@@ -268,7 +268,7 @@ write(
   file = "output/cluster_comparison_r.html"
 )
 
-# Visualization of group differences===========================================
+# Illustration of group differences============================================
 
 head(cluster_data_DTA_pre_proc) # DTA data (pre-processed)
 head(cluster_data_DTA_post_proc) # DTA data (post-processed)
@@ -297,9 +297,12 @@ clustering <- list(
 #  low degree of wage coordination and low government expenditures on social security.
 #  very low corporate, estate and all other wealth tax revenues are also remarkable
 #  FDI as in high road
-cluster_1_vars <- c("res_rents", "oil_exports_share", "complexity_harv", 
-                    "gerd", "gov_exp_educ", "coord", "tax_corpcap", 
-                    "tax_estate_plus_wealth", "fdi_to_gdp")
+cluster_1_vars <- c(
+  "res_rents", "oil_exports_share", "primary_exports_share_1",
+                    "complexity_harv", "gerd", "gov_exp_educ", #Industry
+                    "coord", "gov_exp_socprtc",
+                    "tax_corpcap", "tax_estate_plus_wealth", "size_of_finance"
+  )
 
 # Cluster 2: finance (Luxembourg)
 #  vast size of its financial sector (the share of the financial sector)
@@ -308,31 +311,45 @@ cluster_1_vars <- c("res_rents", "oil_exports_share", "complexity_harv",
 #  weak regulation  
 #  highest degree of economic globalisation in terms of de facto openness as well as in terms of de jure openness. 
 #  high corporate tax revenues, and high benefits in the case of unemployment.
-cluster_2_vars <- c("size_of_finance", "fdi_to_gdp", "primary_exports_share_1",
-                    "employment_protect", "kof_econ_defacto", 
-                    "kof_econ_dejure", "tax_corpcap", "ubr")
+cluster_2_vars <- c(
+  "kof_econ_defacto", "coal_metal_export_share", "oil_exports_share", 
+  "primary_exports_share_1", "res_rents", # TODO Share of coals and metals raus?
+  "ict_ksh", "ubr", "gini_market", 
+  "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", 
+  "size_of_finance", "kof_econ_dejure"
+  )
 
 # Cluster 3: deregulated regime (United Kingdom, Ireland and Hungary)
 #  deregulated labour market and high income inequality. 
 #  43.5 percent of their former net income in case of unemployment and the employment protection (mean value of 1.5) is also very low. 
 #  low government expenditures on social security
 #  low tax revenues can be described as a strategy aiming to improve price competitiveness.
-cluster_3_vars <- c("employment_protect", "gini_market", "ubr",
-                    "gov_exp_socprtc","tax_income", "tax_rev_to_gdp")
+cluster_3_vars <- c(
+  "coal_metal_export_share", 
+  "ict_ksh",
+  "employment_protect", "gini_market", "ubr"
+  )
 
 # Cluster 4: less globalised model (Poland, Greece, Portugal, Slovakia, Spain, Italia, Slovenia and Czech Republic)
 #  exact counterpart to cluster 2 (see Table 2)
 #  low degree of international integration as reflected by low values in foreign direct investments and the economic globalisation index. 
 #  government expenditures on education and investments in research and development are considerably below the other trade regimes. 
 #  relatively strict labor market regulation.
-cluster_4_vars <- c("fdi_to_gdp", "kof_econ_defacto", "kof_econ_dejure", 
-                    "gerd", "gov_exp_educ", "employment_protect")
+cluster_4_vars <- c(
+ "kof_econ_defacto", 
+ "gov_exp_educ",
+ "employment_protect",
+ "kof_econ_dejure", "fdi_to_gdp"
+ )
 
 # Cluster 5: Technological leaders (France, Sweden, Finland, Denmark, Netherlands, Belgium, Germany and Austria)
 #  highest degree of economic complexity
 #  high degree of wage coordination and high government expenditures on social security.
 #  high investments in research and development
-cluster_5_vars <- c("complexity_harv", "coord", "gov_exp_socprtc", "gerd")
+cluster_5_vars <- c(
+  "complexity_harv", "gerd", # TODO Add industry output in relation to GDP
+  "coord", "gov_exp_socprtc"
+  )
 
 clustering_vars <- list(
   "C1" = cluster_1_vars,
@@ -353,8 +370,17 @@ data_taxonomy <- data_taxonomy %>%
                                   NA)))))
     )
 
-# Cluster 1: Taxonomy plot-----------------------------------------------------
+# Taxonomy table---------------------------------------------------------------
 
-c1_plots <- make_plots(data_taxonomy, "C1", clustering_vars)
-ggsave(plot = c1_plots, filename = "output/TEST.pdf", width = length(c1_plots)*2.5, height = 8)
+# Taxonomy plots---------------------------------------------------------------
+for (i in 1:5){
+  cluster_considered <- paste0("C", i)
+  print(cluster_considered)
+  current_plots <- make_plots(data_taxonomy, cluster_considered, clustering_vars)
+  ggsave(plot = current_plots, 
+         filename = paste0("output/", cluster_considered, "_barplot.pdf"), 
+         width = length(current_plots)*2.5, height = 8)
+}
+
+
 
