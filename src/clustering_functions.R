@@ -84,3 +84,91 @@ compare_clustering_types <- function(raw_dat,
                   `Clust. coef.`=dif_coef)
   return(info_frame)
 }
+
+#' Setup data for cluster taxonomy
+#' 
+#' Takes the taxonomy data and returns a data frame that can be used
+#'   to create figures illustrating the differences among clusters.
+#'   
+#' @param data_used The data used
+#' @param cluster considered The name of the cluster (e.g. C1 or C2); must be
+#'   a character with a leading C, as in data_used.
+#' @param cluster_variables A list with information about the variables to 
+#'   be included in the final data. Names of the list should be clusters as 
+#'   in \code{cluster}, the items the names of the variables as strings.
+#' @return A data table with the data as to be used by ggplot2.
+setup_taxonomy_data <- function(data_used,
+                                cluster_considered, 
+                                cluster_variables){
+  if (!cluster_considered %in% data_used[["cluster"]]){
+    stop("Cluster considered not present in data set!")
+  }
+  cluster_data <- data_used %>%
+    dplyr::select(one_of("country", "cluster", 
+                         cluster_variables[[cluster_considered]])) %>%
+    dplyr::mutate(cluster = ifelse(cluster == cluster_considered, 
+                                   cluster_considered, "Rest")) %>%
+    dplyr::group_by(cluster) %>%
+    dplyr::summarise_if(is.numeric, mean, na.rm=TRUE) %>%
+    dplyr::ungroup()
+  # TODO check for NA
+  return(cluster_data)
+}
+
+#' Make the taxonomy plots
+#' 
+#' Creates plots to visualize the descriptive statistics of the trade models.
+#'  Takes as input the raw taxonomy data, processes it using the function
+#'  \code{setup_taxonoy_data} and then creates the plots. Can return both
+#'  a complete plot, or a list of individual plots.
+#' 
+#' @param data_used The data to be used. Must have a column \code{cluster}
+#'  in which 'C1', 'C2', etc. identify the cluster.
+#' @param cluster considered A string in the form 'C1', 'C2' etc. to
+#'  identify the cluster to be visualized.
+#' @param cluster_variables A list in which keys have the same name as the
+#'  clusters, and items indicate the relevant variables as strings.
+#' @param variable_subset If FALSE (the default) all variables that are 
+#'  specified in \code{cluster_variables} are used for the visualization.
+#'  Otherwise, you can pass a list of variable names as strings to visualize
+#'  onle those.
+#' @param return_full_plot If TRUE (the default) function combines the single
+#'  plots into one full plot (using \code{ggpubr:ggarrange}. If FALSE a list of
+#'  single plots is returned.)
+make_plots <- function(data_used,
+                       cluster_considered, 
+                       cluster_variables,
+                       variable_subset=FALSE,
+                       return_full_plot=TRUE){
+  if (!(FALSE %in% variable_subset)){
+    cluster_variables <- variable_subset
+  }
+  
+  cluster_data <-  setup_taxonomy_data(data_used, 
+                                       cluster_considered, 
+                                       cluster_variables)
+  
+  plots_to_do <- names(cluster_data)[2:length(names(cluster_data))]
+  final_plots <- list()
+  
+  for (p in plots_to_do){
+    print(p)
+    final_plots[[p]] <- ggplot(cluster_data,
+                               aes_string(x="cluster", 
+                                          y=p)) +
+      geom_bar(stat = "identity") +
+      ggtitle(p) + 
+      scale_y_continuous(expand = c(0, 0))
+    theme_bw() + 
+      theme(panel.border = element_blank(),
+            axis.line = element_line())
+  }
+  if (return_full_plot){
+    full_plot <- ggpubr::ggarrange(
+      plotlist = final_plots, 
+      ncol = length(names(final_plots)))
+    return(full_plot)
+  } else {
+    return(final_plots)
+  }
+}
