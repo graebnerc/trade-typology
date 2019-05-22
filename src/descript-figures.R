@@ -203,7 +203,7 @@ ggsave(filename = "output/fig_5_unemployment.pdf",
 #' @param time_period A vector with two elements indicating first and
 #'  last year considered. Used for the plot title.
 #' @return A ggplot2 barplot object.
-make_ineq_barplot <- function(barplot_data, time_period){
+make_ineq_barplot <- function(barplot_data, time_period, x_axis_range){
   
   ineq_comparison_plot <- ggplot(barplot_data) +
     geom_bar(aes(x=variable,
@@ -211,13 +211,13 @@ make_ineq_barplot <- function(barplot_data, time_period){
                  color=cluster,
                  fill=cluster),
              stat = "identity", 
-             position = "dodge") + 
+             position = "dodge") +
     coord_flip()
   
   ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot, 
                                            type_x_axis = "discrete") + 
     scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
-    ylab("Change in %") + 
+    scale_y_continuous(limits = x_axis_range, name = "Change in %") +
     theme(
       axis.title.y = element_blank()
     ) + 
@@ -293,23 +293,27 @@ ineq_data_overall <- macro_data %>%
   gather(variable, value, -cluster)
 ineq_data_overall
 
+x_barplot_range <- c(-0.2, 0.2)
 
 ineq_plot_overall <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 4)=="full"), 
-  c(1994, 2016))
+  c(1994, 2016),
+  x_barplot_range)
 ineq_plot_overall
 
 ineq_plot_early <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 5)=="early"), 
-  c(1994, 2007))
+  c(1994, 2007),
+  x_barplot_range)
 ineq_plot_early
 
 ineq_plot_late <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 4)=="late"), 
-  c(2008, 2016))
+  c(2008, 2016),
+  x_barplot_range)
 ineq_plot_late
 
 full_ineq_plot <- ggpubr::ggarrange(
