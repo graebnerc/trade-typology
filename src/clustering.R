@@ -16,24 +16,54 @@ source("src/clustering_data.R")
 cluster_data <- cluster_data_R_v4
 
 # Cluster implementation=======================================================
+save_dendogram <- function(clustering_variables, vers, number_groups){
+  
+  clustering_variables_coded <- paste0("z", clustering_variables)
+  
+  clustering_list <- do_clustering(
+    dplyr::mutate(cluster_data, country=ifelse(
+      country=="United Kingdom", "UK", country)),
+    clustering_variables_coded, 
+    n_groups)
+  
+  clustering_dendogram <-  clustering_list$cluster_plot + 
+    ggtitle(paste0("Result of the hierarchical clustering (", vers, ")")) +
+    xlab("Countries") + ylab("") +
+    theme(axis.title = element_blank())
+  clustering_dendogram
+  
+  ggplot2::ggsave(plot = clustering_dendogram,
+                  filename = paste0("output/clustering_", vers, ".pdf"), 
+                  width = 8, height = 6)
+  
+  return(clustering_dendogram)
+}
+# Variable selection 1---------------------------------------------------------
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "coal_metal_export_share", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "gini_market"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
 
 n_groups <- 5
+current_version <- "v1"
 
-clustering_list <- do_clustering(
-  dplyr::mutate(cluster_data, country=ifelse(
-    country=="United Kingdom", "UK", country)),
-  cluster_vars, 
-  n_groups)
+v1_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
 
-clustering_dendogram <-  clustering_list$cluster_plot + 
-  ggtitle("Result of the hierarchical clustering") +
-  xlab("Länder") + ylab("") +
-  theme(axis.title = element_blank())
-clustering_dendogram
+# Variable selection 1---------------------------------------------------------
+# Just as 1 but this time with post tax gini
 
-ggplot2::ggsave(plot = clustering_dendogram,
-                filename = "output/clustering.pdf", 
-                width = 8, height = 6)
 
 # Comparison of cluster algorithms=============================================
 
