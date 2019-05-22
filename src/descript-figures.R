@@ -90,6 +90,41 @@ pretty_up_ggplot <- function(old_plot){
   return(new_plot)
 }
 
+fig_width <- 9
+fig_height <- 6
+# Figure 3: Current account----------------------------------------------------
+
+fig_current_account <- ggplot(macro_data, 
+                           aes(x=year,
+                               y=current_account_GDP_ameco_fn1,
+                               color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = current_account_GDP_ameco_fn1 - 0.5*current_account_GDP_ameco_fn2, 
+        ymax = current_account_GDP_ameco_fn1 + 0.5*current_account_GDP_ameco_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point()
+
+fig_current_account <- pretty_up_ggplot(fig_current_account) +
+  ggtitle("Current Account") + 
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_current_account
+
+ggsave(filename = "output/fig_3_current-account.pdf", 
+       width = fig_width, height = fig_height)
+
+
+# Figure 4: GDP growth---------------------------------------------------------
+
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
 fig_unemployment <- ggplot(macro_data, 
@@ -116,3 +151,6 @@ fig_unemployment <- pretty_up_ggplot(fig_unemployment) +
     )
 
 fig_unemployment
+
+ggsave(filename = "output/fig_5_unemployment.pdf", 
+       width = fig_width, height = fig_height)
