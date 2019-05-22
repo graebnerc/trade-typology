@@ -9,7 +9,7 @@ library(tidyverse)
 library(data.table)
 
 # Set up dataset===============================================================
-set_up_macro_data <- FALSE # Extracts data from package MacroDataR
+set_up_macro_data <- TRUE # Extracts data from package MacroDataR
 macro_data_file_name <- "data/descriptive_data.csv"
 
 if (set_up_macro_data){
