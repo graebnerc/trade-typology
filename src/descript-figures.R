@@ -204,12 +204,13 @@ ineq_data_overall <- macro_data %>%
   unite("observation", c("variable", "year")) %>%
   spread(observation, value) %>%
   mutate(
-    gini_post_tax_diff=gini_post_tax_2016-gini_post_tax_1994,
-    gini_post_tax_change=gini_post_tax_diff/gini_post_tax_1994,
-    gini_pre_tax_diff=gini_pre_tax_2016-gini_pre_tax_1994,
-    gini_pre_tax_change=gini_pre_tax_diff/gini_pre_tax_1994,
-    wage_share_diff=wage_share_2016-wage_share_1994,
-    wage_share_change=wage_share_diff/wage_share_1994,
+    gini_post_tax_diff_full=gini_post_tax_2016-gini_post_tax_1994,
+    gini_post_tax_change_full=gini_post_tax_diff_full/gini_post_tax_1994,
+    gini_pre_tax_diff_full=gini_pre_tax_2016-gini_pre_tax_1994,
+    gini_pre_tax_change_full=gini_pre_tax_diff_full/gini_pre_tax_1994,
+    wage_share_diff_full=wage_share_2016-wage_share_1994,
+    wage_share_change_full=wage_share_diff_full/wage_share_1994,
+    
     gini_post_tax_diff_early=gini_post_tax_2007-gini_post_tax_1994,
     gini_post_tax_change_early=gini_post_tax_diff_early/gini_post_tax_1994,
     gini_pre_tax_diff_early=gini_pre_tax_2007-gini_pre_tax_1994,
@@ -224,8 +225,8 @@ ineq_data_overall <- macro_data %>%
     wage_share_change_late=wage_share_diff_late/wage_share_2008
   ) %>%
   select(
-    one_of("cluster", "gini_post_tax_change", 
-           "gini_pre_tax_change", "wage_share_change",
+    one_of("cluster", "gini_post_tax_change_full", 
+           "gini_pre_tax_change_full", "wage_share_change_full",
            "gini_post_tax_change_early", 
            "gini_pre_tax_change_early", "wage_share_change_early",
            "gini_post_tax_change_late", 
