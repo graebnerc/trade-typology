@@ -299,3 +299,24 @@ ineq_plot_overall <- make_ineq_barplot(
          get_last_char(variable, 4)=="full"), 
   c(1994, 2016))
 ineq_plot_overall
+
+ineq_plot_early <- make_ineq_barplot(
+  filter(ineq_data_overall, 
+         get_last_char(variable, 5)=="early"), 
+  c(1994, 2007))
+ineq_plot_early
+
+ineq_plot_late <- make_ineq_barplot(
+  filter(ineq_data_overall, 
+         get_last_char(variable, 4)=="late"), 
+  c(2008, 2016))
+ineq_plot_late
+
+full_ineq_plot <- ggpubr::ggarrange(
+  ineq_plot_overall, ineq_plot_early, ineq_plot_late, 
+  ncol = 3, legend = "bottom", common.legend = TRUE
+)
+
+ggsave(filename = "output/fig_6_inquality-changes.pdf",
+       plot = full_ineq_plot, 
+       height = fig_height, width = 2*fig_width)
