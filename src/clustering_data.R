@@ -38,7 +38,9 @@ new_macro_data <- data.table::fread("data/Clustering_data_Dennis_new.csv") %>%
 
 brand_new_macro_data <- MacroDataR::macro_data
 brand_new_macro_data <- brand_new_macro_data %>%
-  select(one_of("iso3c", "year", "gini_post_tax", "gini_pre_tax")) %>%
+  select(one_of("iso3c", "year", "gini_post_tax", "gini_pre_tax", "wage_share",
+                "empl_ind", "empl_agr", "empl_serv", "empl_self", "unemp_youth_neet",
+                "VA_industry_gdp", "VA_manufct_gdp")) %>%
   rename(country=iso3c) %>%
   filter(country %in% unique(new_macro_data$country))
 
@@ -84,7 +86,9 @@ rel_vars <- c("kof_econ_defacto", "coal_metal_export_share",
               "employment_protect", "ubr", "gov_exp_socprtc", 
               "gini_pre_tax", "tax_corpcap", "tax_estate_plus_wealth", 
               "fdi_to_gdp", "size_of_finance", "kof_econ_dejure",
-              "gini_post_tax"
+              "gini_post_tax", "wage_share", "empl_ind", "empl_agr", 
+              "empl_serv", "empl_self", "unemp_youth_neet",
+              "VA_industry_gdp", "VA_manufct_gdp"
 ) 
 # wird unten nicht mehr verwendet, aber war ursprünglich drinnen:
 nrel_vars <- c("exp_to_gdp", "gov_exp_to_gdp", "tax_total", 
@@ -123,7 +127,15 @@ cluster_data_R_v4 <- cluster_data_R_v3 %>%
     zcoord = scale(coord)[,1], # egen zcoord=std(coord)
     zadjcov = scale(adjcov)[,1], # egen zadjcov=std(adjcov)
     ztax_income = scale(tax_income)[,1], # egen ztax_income =std(tax_income)
-    ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1] # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
+    ztax_rev_to_gdp = scale(tax_rev_to_gdp)[,1], # egen ztax_rev_to_gdp =std(tax_rev_to_gdp)
+    zwage_share = scale(wage_share)[,1],
+    zempl_ind = scale(empl_ind)[,1], 
+    zempl_agr = scale(empl_agr)[,1],
+    zempl_serv = scale(empl_serv)[,1],
+    zempl_self = scale(empl_self)[,1],
+    zunemp_youth_neet = scale(unemp_youth_neet)[,1],
+    zVA_industry_gdp = scale(VA_industry_gdp)[,1],
+    zVA_manufct_gdp = scale(VA_manufct_gdp)[,1]
   )
 
 # data overview:
