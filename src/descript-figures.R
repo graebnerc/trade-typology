@@ -125,6 +125,35 @@ ggsave(filename = "output/fig_3_current-account.pdf",
 
 # Figure 4: GDP growth---------------------------------------------------------
 
+fig_gdp_growth <- ggplot(filter(macro_data, year<2018), 
+                              aes(x=year,
+                                  y=gdp_real_lcu_growth_fn1,
+                                  color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = gdp_real_lcu_growth_fn1 - 0.5*gdp_real_lcu_growth_fn2, 
+        ymax = gdp_real_lcu_growth_fn1 + 0.5*gdp_real_lcu_growth_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point()
+
+fig_gdp_growth <- pretty_up_ggplot(fig_gdp_growth) +
+  ggtitle("Growth of real GDP") + 
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_gdp_growth
+
+ggsave(filename = "output/fig_4_gdp-growth.pdf", 
+       width = fig_width, height = fig_height)
+
+
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
 fig_unemployment <- ggplot(macro_data, 
@@ -154,3 +183,9 @@ fig_unemployment
 
 ggsave(filename = "output/fig_5_unemployment.pdf", 
        width = fig_width, height = fig_height)
+
+# Figure 6: Inequality comparison----------------------------------------------
+
+ineq_data <- macro_data %>%
+  filter(year %in% c(1994, 2017))
+
