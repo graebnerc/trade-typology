@@ -188,6 +188,40 @@ ggsave(filename = "output/fig_5_unemployment.pdf",
 
 # Figure 6: Inequality comparison----------------------------------------------
 
-ineq_data <- macro_data %>%
-  filter(year %in% c(1994, 2017))
+ineq_data_overall <- macro_data %>%
+  filter(year %in% c(1994, 2016)) %>%
+  select(
+    one_of("cluster", "year", "gini_post_tax", "gini_pre_tax", "wage_share")
+    ) %>%
+  group_by(year, cluster) %>%
+  summarise_all(mean, na.rm=T) %>%
+  ungroup() %>%
+  gather(variable, value, -year, -cluster) %>%
+  unite("observation", c("variable", "year")) %>%
+  spread(observation, value) %>%
+  mutate(
+    gini_post_tax_diff=gini_post_tax_2016-gini_post_tax_1994,
+    gini_post_tax_change=gini_post_tax_diff/gini_post_tax_1994,
+    gini_pre_tax_diff=gini_pre_tax_2016-gini_pre_tax_1994,
+    gini_pre_tax_change=gini_pre_tax_diff/gini_pre_tax_1994,
+    wage_share_diff=wage_share_2016-wage_share_1994,
+    wage_share_change=wage_share_diff/wage_share_1994
+  ) %>%
+  select(
+    one_of("cluster", "gini_post_tax_change", 
+           "gini_pre_tax_change", "wage_share_change")
+    ) %>%
+  gather(variable, value, -cluster)
+ineq_data_overall
 
+ineq_comparison_plot <- ggplot(ineq_data_overall) +
+  geom_bar(aes(x=variable,
+               y=value,
+               color=cluster,
+               fill=cluster),
+           stat = "identity", 
+           position = "dodge") + 
+  coord_flip()
+
+ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot)
+ineq_comparison_plot
