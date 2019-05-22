@@ -86,6 +86,56 @@ current_version <- "v2(post_tax_gini)"
 v2_clustering <- save_dendogram(clustering_variables = variables_clustering, 
                                 vers = current_version, number_groups = n_groups)
 
+# Variable selection 3---------------------------------------------------------
+# Just as 1 but this time with wage_share instead of gini for labor market institutions
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "coal_metal_export_share", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "wage_share"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 5
+current_version <- "v3(wage_share_instead_gini)"
+
+v3_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+# Variable selection 4---------------------------------------------------------
+# As 3, but with emploment in the agricultural sector instead of coal exports for dimension 1
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "empl_agr", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "wage_share"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 5
+current_version <- "v4(v3_empl_agri_instead_coal)"
+
+v4_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+# Probieren: RULC/NULC in labor market, aber instead of what?
+
 # Comparison of cluster algorithms=============================================
 
 cluster_comparison <- compare_clustering_types(
