@@ -227,5 +227,12 @@ ineq_comparison_plot <- ggplot(ineq_data_overall) +
            position = "dodge") + 
   coord_flip()
 
-ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot)
+ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot, 
+                                         type_x_axis = "discrete") + 
+  scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
+  ylab("Change in %") + 
+  theme(
+    axis.title.y = element_blank()
+    ) + 
+  ggtitle("Changes between 1994 and 2016")
 ineq_comparison_plot
