@@ -234,21 +234,67 @@ ineq_data_overall <- macro_data %>%
   gather(variable, value, -cluster)
 ineq_data_overall
 
-ineq_comparison_plot <- ggplot(ineq_data_overall) +
-  geom_bar(aes(x=variable,
-               y=value,
-               color=cluster,
-               fill=cluster),
-           stat = "identity", 
-           position = "dodge") + 
-  coord_flip()
-
-ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot, 
-                                         type_x_axis = "discrete") + 
-  scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
-  ylab("Change in %") + 
-  theme(
-    axis.title.y = element_blank()
+#' Create an inequality barplot
+#' 
+#' Takes inequality data and creates a barplot. Will be used to create 
+#'  similar plots for early, late and overall time period. The plot
+#'  will visualize changes frim first to last data point in all
+#'  the variables.
+#'  
+#' @param barplot_data The inequality data for the barplot
+#' @param time_period A vector with two elements indicating first and
+#'  last year considered. Used for the plot title.
+#' @return A ggplot2 barplot object.
+make_ineq_barplot <- function(barplot_data, time_period){
+  
+  ineq_comparison_plot <- ggplot(barplot_data) +
+    geom_bar(aes(x=variable,
+                 y=value,
+                 color=cluster,
+                 fill=cluster),
+             stat = "identity", 
+             position = "dodge") + 
+    coord_flip()
+  
+  ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot, 
+                                           type_x_axis = "discrete") + 
+    scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
+    ylab("Change in %") + 
+    theme(
+      axis.title.y = element_blank()
     ) + 
-  ggtitle("Changes between 1994 and 2016")
-ineq_comparison_plot
+    ggtitle(
+      paste0("Changes between ", time_period[1], " and ", time_period[2])
+      )
+  
+  return(ineq_comparison_plot)
+}
+
+#' Get the last characters of a string
+#' 
+#' Returns the last x characters of a string, where x can be specified
+#' 
+#' @param a_string A string
+#' @param n_char Specifies how many of the last characters should be returned
+#' @return A string with the last \code{n_char} characters of \code{a_string}
+get_last_char <- function(a_string, n_char){
+  if (as.integer(n_char) != n_char){
+    warning("n_char is not an integer, will be coerced!")
+  }
+  n_char <- as.integer(n_char)
+  if (nchar(a_string)<=n_char){
+    warning("String shorter of of equal length as n_char. Return full string.")
+    return(a_string)
+  }
+  n_char <- n_char - 1
+  last_chars <- substr(a_string, 
+                       nchar(a_string)-n_char, nchar(a_string)
+                       )
+  return(last_chars)
+}
+
+ineq_plot_overall <- make_ineq_barplot(
+  filter(ineq_data_overall, 
+         get_last_char(variable, 4)=="late"), 
+  c(1994, 2016))
+ineq_plot_overall
