@@ -63,7 +63,7 @@ for (cl in names(clustering)){
     mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
 }
 
-macro_data <- macro_data %>%
+macro_data_agg <- macro_data %>%
   select(-iso3c) %>%
   group_by(year, cluster) %>%
   summarise_all(.funs = c(mean, sd), na.rm=T) %>%
@@ -92,9 +92,11 @@ pretty_up_ggplot <- function(old_plot){
 
 fig_width <- 9
 fig_height <- 6
+
+
 # Figure 3: Current account----------------------------------------------------
 
-fig_current_account <- ggplot(macro_data, 
+fig_current_account <- ggplot(macro_data_agg, 
                            aes(x=year,
                                y=current_account_GDP_ameco_fn1,
                                color=cluster)
@@ -125,7 +127,7 @@ ggsave(filename = "output/fig_3_current-account.pdf",
 
 # Figure 4: GDP growth---------------------------------------------------------
 
-fig_gdp_growth <- ggplot(filter(macro_data, year<2018), 
+fig_gdp_growth <- ggplot(filter(macro_data_agg, year<2018), 
                               aes(x=year,
                                   y=gdp_real_lcu_growth_fn1,
                                   color=cluster)
@@ -156,7 +158,7 @@ ggsave(filename = "output/fig_4_gdp-growth.pdf",
 
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
-fig_unemployment <- ggplot(macro_data, 
+fig_unemployment <- ggplot(macro_data_agg, 
                            aes(x=year,
                                y=unemp_rate_fn1,
                                color=cluster)
