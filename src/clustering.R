@@ -38,6 +38,7 @@ save_dendogram <- function(clustering_variables, vers, number_groups){
   
   return(clustering_dendogram)
 }
+
 # Variable selection 1---------------------------------------------------------
 variables_clustering <- list(
   "endownments" = c(
@@ -47,7 +48,7 @@ variables_clustering <- list(
     "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
   ),
   "labor_market" = c(
-    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "gini_market"  
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "gini_pre_tax"  
   ),
   "regulation" = c(
     "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
@@ -61,9 +62,29 @@ current_version <- "v1"
 v1_clustering <- save_dendogram(clustering_variables = variables_clustering, 
                                 vers = current_version, number_groups = n_groups)
 
-# Variable selection 1---------------------------------------------------------
+# Variable selection 2---------------------------------------------------------
 # Just as 1 but this time with post tax gini
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "coal_metal_export_share", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "gini_post_tax"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
 
+n_groups <- 5
+current_version <- "v2(post_tax_gini)"
+
+v2_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
 
 # Comparison of cluster algorithms=============================================
 
