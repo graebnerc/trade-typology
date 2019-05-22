@@ -193,7 +193,7 @@ ggsave(filename = "output/fig_5_unemployment.pdf",
 # Figure 6: Inequality comparison----------------------------------------------
 
 ineq_data_overall <- macro_data %>%
-  filter(year %in% c(1994, 2016)) %>%
+  filter(year %in% c(1994, 2007, 2008, 2016)) %>%
   select(
     one_of("cluster", "year", "gini_post_tax", "gini_pre_tax", "wage_share")
     ) %>%
@@ -209,11 +209,27 @@ ineq_data_overall <- macro_data %>%
     gini_pre_tax_diff=gini_pre_tax_2016-gini_pre_tax_1994,
     gini_pre_tax_change=gini_pre_tax_diff/gini_pre_tax_1994,
     wage_share_diff=wage_share_2016-wage_share_1994,
-    wage_share_change=wage_share_diff/wage_share_1994
+    wage_share_change=wage_share_diff/wage_share_1994,
+    gini_post_tax_diff_early=gini_post_tax_2007-gini_post_tax_1994,
+    gini_post_tax_change_early=gini_post_tax_diff_early/gini_post_tax_1994,
+    gini_pre_tax_diff_early=gini_pre_tax_2007-gini_pre_tax_1994,
+    gini_pre_tax_change_early=gini_pre_tax_diff_early/gini_pre_tax_1994,
+    wage_share_diff_early=wage_share_2007-wage_share_1994,
+    wage_share_change_early=wage_share_diff_early/wage_share_1994,
+    gini_post_tax_diff_late=gini_post_tax_2016-gini_post_tax_2008,
+    gini_post_tax_change_late=gini_post_tax_diff_late/gini_post_tax_2008,
+    gini_pre_tax_diff_late=gini_pre_tax_2016-gini_pre_tax_2008,
+    gini_pre_tax_change_late=gini_pre_tax_diff_late/gini_pre_tax_2008,
+    wage_share_diff_late=wage_share_2016-wage_share_2008,
+    wage_share_change_late=wage_share_diff_late/wage_share_2008
   ) %>%
   select(
     one_of("cluster", "gini_post_tax_change", 
-           "gini_pre_tax_change", "wage_share_change")
+           "gini_pre_tax_change", "wage_share_change",
+           "gini_post_tax_change_early", 
+           "gini_pre_tax_change_early", "wage_share_change_early",
+           "gini_post_tax_change_late", 
+           "gini_pre_tax_change_late", "wage_share_change_late")
     ) %>%
   gather(variable, value, -cluster)
 ineq_data_overall
