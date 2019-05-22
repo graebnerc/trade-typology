@@ -134,6 +134,79 @@ current_version <- "v4(v3_empl_agri_instead_coal)"
 v4_clustering <- save_dendogram(clustering_variables = variables_clustering, 
                                 vers = current_version, number_groups = n_groups)
 
+# Variable selection 5---------------------------------------------------------
+# As 3, but with emploment in the service sector instead of coal exports for dimension 1 (should be lower for those with many endownments)
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "empl_serv", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "wage_share"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 5
+current_version <- "v5(v3_empl_serv_instead_coal)"
+
+v5_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+# Variable selection 6---------------------------------------------------------
+# As 3, but with emploment in the indus sector instead of coal exports for dimension 1 (should be lower for those with many endownments)
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "empl_ind", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "wage_share"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 5
+current_version <- "v6(v3_empl_indus_instead_coal)"
+
+v6_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+# Variable selection 7---------------------------------------------------------
+# As 3, but with VA in manufacturing instead of coal exports for dimension 1 (should be lower for those with many endownments)
+variables_clustering <- list(
+  "endownments" = c(
+    "kof_econ_defacto", "VA_manufct_gdp", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "gov_exp_socprtc", "wage_share"  
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 5
+current_version <- "v7(v3_VA_manuf_instead_coal)"
+
+v7_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+
 # Probieren: RULC/NULC in labor market, aber instead of what?
 
 # Comparison of cluster algorithms=============================================
