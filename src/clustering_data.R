@@ -18,10 +18,9 @@ ictwss <- haven::read_dta("data/ictwss_short.dta") %>%
 missing_vars <- c(
   "KOF_econ_defacto", "gov_exp_to_GDP", "tax_total", "complexity_harv", 
   "industrial_to_gdp", "GERD", "ict_ksh", "gov_exp_educ",  "tax_rev_to_gdp",
-  "adjusted_wage_share", "employment_protect", "ubr", "udens", "gini_market",
+  "adjusted_wage_share", "employment_protect", "ubr", "udens", "tax_income",
   "tax_ssc_employer", "tax_corpcap", "Tax_Estate_plus_Wealth", "fdi_to_gdp", 
-  "size_of_finance", "KOF_econ_dejure", "exp_to_gdp", "gov_exp_socprtc", 
-  "tax_income"
+  "size_of_finance", "KOF_econ_dejure", "exp_to_gdp", "gov_exp_socprtc"
 )
 
 new_macro_data <- data.table::fread("data/Clustering_data_Dennis_new.csv") %>%
@@ -36,6 +35,15 @@ new_macro_data <- data.table::fread("data/Clustering_data_Dennis_new.csv") %>%
     gov_exp_to_gdp=gov_exp_to_GDP,
     tax_estate_plus_wealth=Tax_Estate_plus_Wealth
   )
+
+brand_new_macro_data <- MacroDataR::macro_data
+brand_new_macro_data <- brand_new_macro_data %>%
+  select(one_of("iso3c", "year", "gini_post_tax", "gini_pre_tax")) %>%
+  rename(country=iso3c) %>%
+  filter(country %in% unique(new_macro_data$country))
+
+new_macro_data <- left_join(new_macro_data, brand_new_macro_data, 
+                            by = c("country", "year"))
 
 cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments, 
                                       by=c("country"="location_code", "year")) %>%
@@ -74,8 +82,9 @@ rel_vars <- c("kof_econ_defacto", "coal_metal_export_share",
               "res_rents", "complexity_harv", "industrial_to_gdp", 
               "gerd", "ict_ksh", "gov_exp_educ", "coord", 
               "employment_protect", "ubr", "gov_exp_socprtc", 
-              "gini_market", "tax_corpcap", "tax_estate_plus_wealth", 
-              "fdi_to_gdp", "size_of_finance", "kof_econ_dejure"
+              "gini_pre_tax", "tax_corpcap", "tax_estate_plus_wealth", 
+              "fdi_to_gdp", "size_of_finance", "kof_econ_dejure",
+              "gini_post_tax"
 ) 
 # wird unten nicht mehr verwendet, aber war ursprünglich drinnen:
 nrel_vars <- c("exp_to_gdp", "gov_exp_to_gdp", "tax_total", 
@@ -97,7 +106,8 @@ cluster_data_R_v4 <- cluster_data_R_v3 %>%
     zemployment_protect = scale(employment_protect)[,1], # egen zemployment_protect =std( employment_protect )
     zubr = scale(ubr)[,1], # egen zubr =std( ubr )
     zudens = scale(udens), # egen zudens =std( udens )
-    zgini_market = scale(gini_market)[,1], # egen zgini_market =std(gini_market )
+    zgini_pre_tax = scale(gini_pre_tax)[,1], # egen zgini_pre_tax =std(gini_pre_tax )
+    zgini_post_tax = scale(gini_post_tax)[,1],
     ztax_ssc_employer = scale(tax_ssc_employer)[,1], # egen ztax_ssc_employer =std( tax_ssc_employer )
     ztax_corpcap = scale(tax_corpcap)[,1], # egen ztax_corpcap =std( tax_corpcap )
     ztax_estate_plus_wealth = scale(tax_estate_plus_wealth)[,1], # egen ztax_estate_plus_wealth =std( tax_estate_plus_wealth )
