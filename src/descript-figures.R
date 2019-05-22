@@ -78,15 +78,19 @@ macro_data_agg <- macro_data %>%
 #' 
 #' @param old_plot The original ggplot2 plot.
 #' @return An updated ggplot2 object.
-pretty_up_ggplot <- function(old_plot){
+pretty_up_ggplot <- function(old_plot, 
+                             type_x_axis="continuous"){
   new_plot <- old_plot +
-    scale_x_continuous(expand = c(0, 0)) +
     theme_bw() +
     theme(panel.border = element_blank(),
           axis.line = element_line(),
           legend.position = "bottom",
           legend.title = element_blank()
     )
+  if (type_x_axis=="continuous"){
+    new_plot <- new_plot +    
+      scale_x_continuous(expand = c(0, 0))
+  }
   return(new_plot)
 }
 
