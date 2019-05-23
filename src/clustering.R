@@ -16,39 +16,6 @@ source("src/clustering_data.R")
 cluster_data <- cluster_data_R_v4
 
 # Cluster implementation=======================================================
-save_dendogram <- function(clustering_variables, number_groups, vers=FALSE){
-  
-  clustering_variables_coded <- paste0("z", clustering_variables)
-  
-  clustering_list <- do_clustering(
-    dplyr::mutate(cluster_data, country=ifelse(
-      country=="United Kingdom", "UK", country)),
-    clustering_variables_coded, 
-    n_groups)
-  
-  clustering_dendogram <-  clustering_list$cluster_plot + 
-    xlab("Countries") + ylab("") +
-    theme(axis.title = element_blank())
-  
-  if (vers){
-    clustering_dendogram <- clustering_dendogram +
-    ggtitle(paste0("Result of the hierarchical clustering (", vers, ")"))
-  }
-  
-  clustering_dendogram
-  
-  if (vers){
-    file_name <- paste0("output/fig_2_clustering_", vers, ".pdf")
-  } else {
-    file_name <- "output/fig_2_clustering.pdf"
-  }
-  
-  ggplot2::ggsave(plot = clustering_dendogram,
-                  filename = file_name, 
-                  width = 8, height = 6)
-  
-  return(clustering_dendogram)
-}
 
 variables_clustering <- list(
   "endownments" = c(
