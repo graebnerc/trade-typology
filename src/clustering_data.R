@@ -2,6 +2,15 @@
 # Here the data will be prepared for the upcoming clustering exercise
 data_source <- "MIT" # or "HARV
 
+
+avg_wages <- data.table::fread("data/avg_wages_oecd.csv") %>%
+  dplyr::select(dplyr::one_of("LOCATION", "TIME", "Value")) %>%
+  dplyr::rename(average_wages=Value,
+                country=LOCATION, 
+                year=TIME) %>%
+  dplyr::mutate(year=as.double(year),
+                average_wages=as.double(average_wages))
+
 endownments <- data.table::fread(
   paste0("data/dimension_endownment_data_", data_source, ".csv")
 ) %>%
@@ -51,6 +60,8 @@ cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments,
                                       by=c("country"="location_code", "year")) %>%
   dplyr::left_join(., new_macro_data, 
                    by=c("country", "year")) %>%
+  dplyr::left_join(., avg_wages,
+                   by=c("country", "year")) %>%
   dplyr::mutate(
     un_ccode=countrycode::countrycode(country, "iso3c", "un")
   )
@@ -88,7 +99,7 @@ rel_vars <- c("kof_econ_defacto", "coal_metal_export_share",
               "fdi_to_gdp", "size_of_finance", "kof_econ_dejure",
               "gini_post_tax", "wage_share", "empl_ind", "empl_agr", 
               "empl_serv", "empl_self", "unemp_youth_neet",
-              "VA_industry_gdp", "VA_manufct_gdp"
+              "VA_industry_gdp", "VA_manufct_gdp", "average_wages"
 ) 
 # wird unten nicht mehr verwendet, aber war ursprünglich drinnen:
 nrel_vars <- c("exp_to_gdp", "gov_exp_to_gdp", "tax_total", 
@@ -135,7 +146,8 @@ cluster_data_R_v4 <- cluster_data_R_v3 %>%
     zempl_self = scale(empl_self)[,1],
     zunemp_youth_neet = scale(unemp_youth_neet)[,1],
     zVA_industry_gdp = scale(VA_industry_gdp)[,1],
-    zVA_manufct_gdp = scale(VA_manufct_gdp)[,1]
+    zVA_manufct_gdp = scale(VA_manufct_gdp)[,1],
+    zaverage_wages = scale(average_wages)[,1]
   )
 
 # data overview:
