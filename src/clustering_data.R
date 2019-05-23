@@ -2,15 +2,6 @@
 # Here the data will be prepared for the upcoming clustering exercise
 data_source <- "MIT" # or "HARV
 
-
-avg_wages <- data.table::fread("data/avg_wages_oecd.csv") %>%
-  dplyr::select(dplyr::one_of("LOCATION", "TIME", "Value")) %>%
-  dplyr::rename(average_wages=Value,
-                country=LOCATION, 
-                year=TIME) %>%
-  dplyr::mutate(year=as.double(year),
-                average_wages=as.double(average_wages))
-
 endownments <- data.table::fread(
   paste0("data/dimension_endownment_data_", data_source, ".csv")
 ) %>%
@@ -49,7 +40,7 @@ brand_new_macro_data <- MacroDataR::macro_data
 brand_new_macro_data <- brand_new_macro_data %>%
   select(one_of("iso3c", "year", "gini_post_tax", "gini_pre_tax", "wage_share",
                 "empl_ind", "empl_agr", "empl_serv", "empl_self", "unemp_youth_neet",
-                "VA_industry_gdp", "VA_manufct_gdp")) %>%
+                "VA_industry_gdp", "VA_manufct_gdp", "average_wages")) %>%
   rename(country=iso3c) %>%
   filter(country %in% unique(new_macro_data$country))
 
@@ -59,8 +50,6 @@ new_macro_data <- left_join(new_macro_data, brand_new_macro_data,
 cluster_data_R_v1 <- dplyr::full_join(ictwss, endownments, 
                                       by=c("country"="location_code", "year")) %>%
   dplyr::left_join(., new_macro_data, 
-                   by=c("country", "year")) %>%
-  dplyr::left_join(., avg_wages,
                    by=c("country", "year")) %>%
   dplyr::mutate(
     un_ccode=countrycode::countrycode(country, "iso3c", "un")
