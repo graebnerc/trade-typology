@@ -8,6 +8,7 @@ library(NbClust)
 library(cluster)
 # TODO Identify source of difference with branch master
 make_taxonomy_plots <- FALSE # Set to T to make taxonomy plots as in JEE (but not yet updated)
+test_nb_clusters <- FALSE
 # Function definitions=========================================================
 source("src/clustering_functions.R")
 
@@ -61,7 +62,9 @@ write(
 )
 
 # Test for number of clusters==================================================
-source("src/nb_clusters.R")
+if (test_nb_clusters){
+  source("src/nb_clusters.R")
+}
 
 # Illustration of group differences============================================
 
