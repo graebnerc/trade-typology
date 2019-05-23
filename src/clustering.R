@@ -48,7 +48,8 @@ clustering_result <- save_dendogram(
 
 cluster_comparison <- compare_clustering_types(
   raw_dat = cluster_data, 
-  clustering_vars = variables_clustering)
+  clustering_vars = variables_clustering,
+  n_groups)
 
 write(
   print(

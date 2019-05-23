@@ -105,18 +105,24 @@ save_dendogram <- function(clustering_variables, number_groups, vers=FALSE){
 #'   
 #'   @param raw_dat The data to be used for the clustering
 compare_clustering_types <- function(raw_dat, 
-                                     clustering_vars) {
+                                     clustering_vars, 
+                                     nb_clusters) {
   
   hc_agnes_complete_linkage <- # Hierarchical clustering using Complete Linkage
-    do_clustering(raw_dat, clustering_vars, 5, "complete")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "complete")[["cluster_obj"]]
   hc_agnes_average_linkage <- # Hierarchical clustering using Average Linkage
-    do_clustering(raw_dat, clustering_vars, 5, "average")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "average")[["cluster_obj"]]
   hc_agnes_single_linkage <- # Hierarchical clustering using single Linkage
-    do_clustering(raw_dat, clustering_vars, 5, "single")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "single")[["cluster_obj"]]
   hc_agnes_ward <- # Hierarchical clustering using Ward's method
-    do_clustering(raw_dat, clustering_vars, 5, "ward")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "ward")[["cluster_obj"]]
   divisive_cluster <-  # divisive hierarchical clustering
-    do_clustering(raw_dat, clustering_vars, 5, "divisive")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "divisive")[["cluster_obj"]]
   
   cluster_type <- c("agnes_complete", "agnes_average", "agnes_single", 
                     "agnes_ward", "diana_divisive")
