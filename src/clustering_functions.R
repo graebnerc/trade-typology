@@ -1,6 +1,7 @@
 #' Clustering
 #' 
 #' Conducts the clustering
+#' 
 #' @param data_file The file for the clustering, must not contain NA
 #' @param clustering_vars Should contain all the variables to be used
 #'   in the clustering as strings
@@ -49,6 +50,54 @@ do_clustering <- function(data_file,
 }
 
 
+#' Save the clustering dendogram
+#' 
+#' Takes a list of variables to be used for the clustering, then implements 
+#'  the clustering using \code{do_clustering}. Saves the resulting dendogram.
+#'  
+#' @param clustering_variables The original names of the variables to be
+#'  used for the clustering. Adds 'z' to the variables automatically.
+#' @param number_groups The number of clusters to be highlighted.
+#' @param vers Optional; adds a version in brackets to the dendogram title
+#'  and adjusts the name of the resulting pdf file. FALSE by default.
+#' @return The resulting ggplot2 object of the dendogram, which is also 
+#'  saved in the output folder.
+save_dendogram <- function(clustering_variables, number_groups, vers=FALSE){
+  
+  clustering_variables_coded <- paste0("z", clustering_variables)
+  
+  clustering_list <- do_clustering(
+    dplyr::mutate(cluster_data, country=ifelse(
+      country=="United Kingdom", "UK", country)),
+    clustering_variables_coded, 
+    n_groups)
+  
+  clustering_dendogram <-  clustering_list$cluster_plot + 
+    xlab("Countries") + ylab("") +
+    theme(axis.title = element_blank())
+  
+  if (vers){
+    clustering_dendogram <- clustering_dendogram +
+      ggtitle(paste0("Result of the hierarchical clustering (", vers, ")"))
+  }
+  
+  clustering_dendogram
+  
+  if (vers){
+    file_name <- paste0("output/fig_2_clustering_", vers, ".pdf")
+  } else {
+    file_name <- "output/fig_2_clustering.pdf"
+  }
+  
+  ggplot2::ggsave(plot = clustering_dendogram,
+                  filename = file_name, 
+                  width = 8, height = 6)
+  
+  return(clustering_dendogram)
+}
+
+
+
 #' Compare clustering algorithms
 #' 
 #' Compares three clustering algorithms by computing their scores and by 
@@ -56,18 +105,24 @@ do_clustering <- function(data_file,
 #'   
 #'   @param raw_dat The data to be used for the clustering
 compare_clustering_types <- function(raw_dat, 
-                                     clustering_vars) {
+                                     clustering_vars, 
+                                     nb_clusters) {
   
   hc_agnes_complete_linkage <- # Hierarchical clustering using Complete Linkage
-    do_clustering(raw_dat, clustering_vars, 5, "complete")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "complete")[["cluster_obj"]]
   hc_agnes_average_linkage <- # Hierarchical clustering using Average Linkage
-    do_clustering(raw_dat, clustering_vars, 5, "average")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "average")[["cluster_obj"]]
   hc_agnes_single_linkage <- # Hierarchical clustering using single Linkage
-    do_clustering(raw_dat, clustering_vars, 5, "single")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "single")[["cluster_obj"]]
   hc_agnes_ward <- # Hierarchical clustering using Ward's method
-    do_clustering(raw_dat, clustering_vars, 5, "ward")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "ward")[["cluster_obj"]]
   divisive_cluster <-  # divisive hierarchical clustering
-    do_clustering(raw_dat, clustering_vars, 5, "divisive")[["cluster_obj"]]
+    do_clustering(raw_dat, 
+                  clustering_vars, nb_clusters, "divisive")[["cluster_obj"]]
   
   cluster_type <- c("agnes_complete", "agnes_average", "agnes_single", 
                     "agnes_ward", "diana_divisive")

@@ -49,6 +49,29 @@ clustering <- list(
     "country.name", "iso3c")
 )
 
+clustering <- list(
+  "primary_goods" = 
+    countrycode::countrycode(
+      c("Latvia", "Estonia"),
+      "country.name", "iso3c"),
+  "Catchup" = countrycode::countrycode(
+    c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia", "Ireland"),
+    "country.name", "iso3c"),
+  "UK" = countrycode::countrycode(
+    c("United Kingdom"),
+    "country.name", "iso3c"),
+  "finance" = countrycode::countrycode(
+    c("Luxembourg"),
+    "country.name", "iso3c"),
+  "periphery" = countrycode::countrycode(
+    c("Greece", "Portugal", "Spain", "Italy", "France"),
+    "country.name", "iso3c"),
+  "high_tech" = countrycode::countrycode(
+    c("Sweden", "Finland", "Denmark", "Netherlands", 
+                  "Belgium", "Germany", "Austria"),
+    "country.name", "iso3c")
+)
+
 
 macro_data$cluster <- NA
 
@@ -317,4 +340,87 @@ full_ineq_plot <- ggpubr::ggarrange(
 
 ggsave(filename = "output/fig_6_inquality-changes.pdf",
        plot = full_ineq_plot, 
+       height = fig_height, width = 2*fig_width)
+
+# new alternative--------------------------------------------------------------
+
+ineq_dynamics_post <- ggplot(macro_data_agg, 
+                             aes(x=year,
+                                 y=gini_post_tax_fn1,
+                                 color=cluster)
+  ) + 
+  geom_ribbon(
+    aes(ymin = gini_post_tax_fn1 - 0.5*gini_post_tax_fn2, 
+        ymax = gini_post_tax_fn1 + 0.5*gini_post_tax_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point()
+
+ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
+  ggtitle("Income inequality (Gini post tax)") + 
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  ) + 
+  scale_x_continuous(
+    limits = c(1994, 2017),
+    breaks = seq(1994, 2016, 2), 
+    expand = c(0, 0))
+
+ineq_dynamics_post
+
+
+ineq_dynamics_pre <- ggplot(macro_data_agg, 
+                             aes(x=year,
+                                 y=gini_pre_tax_fn1,
+                                 color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = gini_pre_tax_fn1 - 0.5*gini_pre_tax_fn2, 
+        ymax = gini_pre_tax_fn1 + 0.5*gini_pre_tax_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point()
+
+ineq_dynamics_pre <- pretty_up_ggplot(ineq_dynamics_pre) +
+  ggtitle("Income inequality (Gini pre tax)") + 
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  ) + 
+  scale_x_continuous(
+    limits = c(1994, 2017),
+    breaks = seq(1994, 2016, 2), 
+    expand = c(0, 0))
+
+ineq_dynamics_pre
+
+
+
+full_ineq_dynamics_plot_pre <- ggpubr::ggarrange(
+  ineq_plot_overall, ineq_dynamics_pre, 
+  ncol = 2, legend = "bottom", common.legend = TRUE
+)
+
+ggsave(filename = "output/fig_6n_inquality-changes-pre.pdf",
+       plot = full_ineq_dynamics_plot_pre, 
+       height = fig_height, width = 2*fig_width)
+
+
+
+full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
+  ineq_plot_overall, ineq_dynamics_post, 
+  ncol = 2, legend = "bottom", common.legend = TRUE
+)
+
+ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
+       plot = full_ineq_dynamics_plot_post, 
        height = fig_height, width = 2*fig_width)
