@@ -49,6 +49,16 @@ clustering <- list(
     "country.name", "iso3c")
 )
 
+clustering <- list(
+  "primary_goods" = c("Latvia", "Estonia"),
+  "Catchup" = c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia", "Ireland"),
+  "UK" = c("United Kingdom"),
+  "finance" = c("Luxembourg"),
+  "periphery" = c("Greece", "Portugal", "Spain", "Italy", "France"),
+  "high_tech" = c("Sweden", "Finland", "Denmark", "Netherlands", 
+                  "Belgium", "Germany", "Austria")
+)
+
 
 macro_data$cluster <- NA
 
