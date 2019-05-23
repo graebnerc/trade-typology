@@ -225,10 +225,58 @@ variables_clustering <- list(
 )
 variables_clustering <- unlist(variables_clustering)
 
-n_groups <- 5
+n_groups <- 6
 current_version <- "v8(discussed)"
 
 v8_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+# Variable selection 9---------------------------------------------------------
+# As discussed
+variables_clustering <- list(
+  "endownments" = c(# empl_agr # VA_manufct_gdp
+    "empl_agr", "VA_manufct_gdp", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "average_wages", "gini_post_tax"   # TODO Add av wages
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 6
+current_version <- "v9(gini_instead_wage_share)"
+
+v9_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+# Variable selection 10---------------------------------------------------------
+# As discussed
+variables_clustering <- list(
+  "endownments" = c(# empl_agr # VA_manufct_gdp
+    "empl_agr", "VA_manufct_gdp", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "average_wages", "adjusted_wage_share"   # TODO Add av wages
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 6
+current_version <- "v10(adj_wage_share_instead_wage_share)"
+
+v10_clustering <- save_dendogram(clustering_variables = variables_clustering, 
                                 vers = current_version, number_groups = n_groups)
 
 
@@ -266,6 +314,16 @@ clustering <- list(
   "Cluster_4" = c("Poland", "Greece", "Portugal", "Slovakia", "Spain", 
                   "Italy", "Slovenia", "Czech Republic", "Czechia"),
   "Cluster_5" = c("France", "Sweden", "Finland", "Denmark", "Netherlands", 
+                  "Belgium", "Germany", "Austria")
+)
+
+clustering <- list(
+  "Cluster_1" = c("Latvia", "Estonia"),
+  "Cluster_2" = c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia", "Ireland"),
+  "Cluster_4" = c("United Kingdom"),
+  "Cluster_3" = c("Luxembourg"),
+  "Cluster_5" = c("Greece", "Portugal", "Spain", "Italy", "France"),
+  "Cluster_6" = c("Sweden", "Finland", "Denmark", "Netherlands", 
                   "Belgium", "Germany", "Austria")
 )
 
@@ -348,13 +406,14 @@ data_taxonomy <- data_taxonomy %>%
              ifelse(country %in% clustering[["Cluster_3"]], "C3", 
                     ifelse(country %in% clustering[["Cluster_4"]], "C4", 
                            ifelse(country %in% clustering[["Cluster_5"]], "C5",
-                                  NA)))))
+                                  ifelse(country %in% clustering[["Cluster_6"]], "C6",
+                                  NA))))))
     )
 
 # Taxonomy table---------------------------------------------------------------
-table_order <- c("kof_econ_defacto", 
+table_order <- c("empl_agr", 
                  "coal_metal_export_share",
-                 "oil_exports_share",
+                 "VA_manufct_gdp",
                  "primary_exports_share_1",
                  "res_rents",
                  "complexity_harv",
@@ -365,8 +424,9 @@ table_order <- c("kof_econ_defacto",
                  "coord",
                  "employment_protect",
                  "ubr", 
-                 "gov_exp_socprtc",
-                 "gini_market",
+                 "adjusted_wage_share",
+                 "wage_share",
+                 "average_wages",
                  "tax_corpcap",
                  "tax_estate_plus_wealth",
                  "fdi_to_gdp",
@@ -388,7 +448,7 @@ write(
     xtable::xtable(taxonomy_table_data),
     type = "html"
   ), 
-  file = "output/taxonomy_table.html"
+  file = "output/taxonomy_table2.html"
 )
 
 
