@@ -207,6 +207,32 @@ v7_clustering <- save_dendogram(clustering_variables = variables_clustering,
                                 vers = current_version, number_groups = n_groups)
 
 
+# Variable selection 8---------------------------------------------------------
+# As discussed
+variables_clustering <- list(
+  "endownments" = c(# empl_agr # VA_manufct_gdp
+    "empl_agr", "VA_manufct_gdp", "oil_exports_share", "primary_exports_share_1", "res_rents"
+  ),
+  "capabilities" = c(
+    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+  ),
+  "labor_market" = c(
+    "coord", "employment_protect", "ubr", "average_wages", "wage_share"   # TODO Add av wages
+  ),
+  "regulation" = c(
+    "tax_corpcap", "tax_estate_plus_wealth", "fdi_to_gdp", "size_of_finance", "kof_econ_dejure" 
+  )
+)
+variables_clustering <- unlist(variables_clustering)
+
+n_groups <- 5
+current_version <- "v8(discussed)"
+
+v8_clustering <- save_dendogram(clustering_variables = variables_clustering, 
+                                vers = current_version, number_groups = n_groups)
+
+
+
 # Probieren: RULC/NULC in labor market, aber instead of what?
 
 # Comparison of cluster algorithms=============================================
