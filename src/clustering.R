@@ -27,7 +27,7 @@ variables_clustering <- list(
     "primary_exports_share_1", "res_rents"
   ),
   "capabilities" = c(
-    "complexity_harv", "industrial_to_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+    "complexity_harv", "VA_industry_gdp", "gerd", "ict_ksh", "gov_exp_educ"
   ),
   "labor_market" = c(
     "coord", "employment_protect", "ubr", "average_wages", 
@@ -124,7 +124,8 @@ table_order <- c("empl_agr",
                  "kof_econ_dejure")
 
 taxonomy_table_data <- data_taxonomy %>%
-  dplyr::mutate(average_wages=average_wages/1000) %>%
+  dplyr::mutate(average_wages=average_wages/1000,
+                industrial_to_gdp=industrial_to_gdp*100) %>%
   dplyr::select(-country) %>%
   dplyr::group_by(cluster) %>%
   dplyr::summarise_all(mean) %>%
