@@ -17,6 +17,8 @@ source("src/clustering_data.R")
 
 cluster_data <- cluster_data_R_v4
 
+fwrite(cluster_data, "data/clustering_data_used.csv")
+
 # Cluster implementation=======================================================
 
 variables_clustering <- list(
