@@ -27,7 +27,7 @@ variables_clustering <- list(
     "primary_exports_share_1", "res_rents"
   ),
   "capabilities" = c(
-    "complexity_harv", "VA_industry_gdp", "gerd", "ict_ksh", "gov_exp_educ"
+    "complexity_harv", "empl_ind", "gerd", "ict_ksh", "gov_exp_educ"
   ),
   "labor_market" = c(
     "coord", "employment_protect", "ubr", "average_wages", 
@@ -77,12 +77,12 @@ sort(vars_all)
 
 clustering <- list(
   "Cluster_1" = c("Latvia", "Estonia"),
-  "Cluster_2" = c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia", "Ireland"),
+  "Cluster_2" = c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia"),
   "Cluster_3" = c("United Kingdom"),
   "Cluster_4" = c("Luxembourg"),
   "Cluster_5" = c("Greece", "Portugal", "Spain", "Italy", "France"),
   "Cluster_6" = c("Sweden", "Finland", "Denmark", "Netherlands", 
-                  "Belgium", "Germany", "Austria")
+                  "Belgium", "Germany", "Austria", "Ireland")
 )
 
 
@@ -99,16 +99,16 @@ data_taxonomy <- data_taxonomy %>%
     )
 
 # Taxonomy table---------------------------------------------------------------
-table_order <- c("empl_agr", 
-                 "VA_manufct_gdp",
+table_order <- c("VA_manufct_gdp",
                  "oil_exports_share",
                  "primary_exports_share_1",
                  "res_rents",
+                 "empl_agr",
                  
+                 "empl_ind", "empl_serv",
                  "complexity_harv",
                  "gerd",
                  "gov_exp_educ",
-                 "industrial_to_gdp",
                  "ict_ksh",
                  
                  "coord",
