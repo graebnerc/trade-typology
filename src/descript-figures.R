@@ -233,7 +233,7 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range){
   
   ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot, 
                                            type_x_axis = "discrete") + 
-    scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
+    # scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
     scale_y_continuous(limits = x_axis_range, name = "Change in %") +
     theme(
       axis.title.y = element_blank()
