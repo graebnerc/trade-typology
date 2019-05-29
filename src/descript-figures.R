@@ -55,7 +55,7 @@ clustering <- list(
       c("Latvia", "Estonia"),
       "country.name", "iso3c"),
   "Catchup" = countrycode::countrycode(
-    c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia", "Ireland"),
+    c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia"),
     "country.name", "iso3c"),
   "UK" = countrycode::countrycode(
     c("United Kingdom"),
@@ -68,7 +68,7 @@ clustering <- list(
     "country.name", "iso3c"),
   "high_tech" = countrycode::countrycode(
     c("Sweden", "Finland", "Denmark", "Netherlands", 
-                  "Belgium", "Germany", "Austria"),
+                  "Belgium", "Germany", "Austria", "Ireland"),
     "country.name", "iso3c")
 )
 
