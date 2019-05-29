@@ -234,7 +234,8 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range){
   ineq_comparison_plot <- pretty_up_ggplot(ineq_comparison_plot, 
                                            type_x_axis = "discrete") + 
     # scale_x_discrete(labels=c("Wage share", "Gini (pre)", "Gini (post)")) +
-    scale_y_continuous(limits = x_axis_range, name = "Change in %") +
+    scale_y_continuous(limits = x_axis_range, name = "Change in %", 
+                       labels = scales::percent_format(scale = 1)) +
     theme(
       axis.title.y = element_blank()
     ) + 
@@ -281,23 +282,23 @@ ineq_data_overall <- macro_data %>%
   spread(observation, value) %>%
   mutate(
     gini_post_tax_diff_full=gini_post_tax_2016-gini_post_tax_1994,
-    gini_post_tax_change_full=gini_post_tax_diff_full/gini_post_tax_1994,
+    gini_post_tax_change_full=gini_post_tax_diff_full/gini_post_tax_1994*100,
     gini_pre_tax_diff_full=gini_pre_tax_2016-gini_pre_tax_1994,
-    gini_pre_tax_change_full=gini_pre_tax_diff_full/gini_pre_tax_1994,
+    gini_pre_tax_change_full=gini_pre_tax_diff_full/gini_pre_tax_1994*100,
     wage_share_diff_full=wage_share_2016-wage_share_1994,
-    wage_share_change_full=wage_share_diff_full/wage_share_1994,
+    wage_share_change_full=wage_share_diff_full/wage_share_1994*100,
     gini_post_tax_diff_early=gini_post_tax_2007-gini_post_tax_1994,
-    gini_post_tax_change_early=gini_post_tax_diff_early/gini_post_tax_1994,
+    gini_post_tax_change_early=gini_post_tax_diff_early/gini_post_tax_1994*100,
     gini_pre_tax_diff_early=gini_pre_tax_2007-gini_pre_tax_1994,
-    gini_pre_tax_change_early=gini_pre_tax_diff_early/gini_pre_tax_1994,
+    gini_pre_tax_change_early=gini_pre_tax_diff_early/gini_pre_tax_1994*100,
     wage_share_diff_early=wage_share_2007-wage_share_1994,
-    wage_share_change_early=wage_share_diff_early/wage_share_1994,
+    wage_share_change_early=wage_share_diff_early/wage_share_1994*100,
     gini_post_tax_diff_late=gini_post_tax_2016-gini_post_tax_2008,
-    gini_post_tax_change_late=gini_post_tax_diff_late/gini_post_tax_2008,
+    gini_post_tax_change_late=gini_post_tax_diff_late/gini_post_tax_2008*100,
     gini_pre_tax_diff_late=gini_pre_tax_2016-gini_pre_tax_2008,
-    gini_pre_tax_change_late=gini_pre_tax_diff_late/gini_pre_tax_2008,
+    gini_pre_tax_change_late=gini_pre_tax_diff_late/gini_pre_tax_2008*100,
     wage_share_diff_late=wage_share_2016-wage_share_2008,
-    wage_share_change_late=wage_share_diff_late/wage_share_2008
+    wage_share_change_late=wage_share_diff_late/wage_share_2008*100
   ) %>%
   select(
     one_of("cluster", "gini_post_tax_change_full", 
@@ -310,27 +311,30 @@ ineq_data_overall <- macro_data %>%
   gather(variable, value, -cluster)
 ineq_data_overall
 
-x_barplot_range <- c(-0.2, 0.2)
+x_barplot_range <- c(-20, 20)
 
 ineq_plot_overall <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 4)=="full"), 
   c(1994, 2016),
-  x_barplot_range)
-ineq_plot_overall
+  x_barplot_range) + 
+  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share")) 
+ineq_plot_overall 
 
 ineq_plot_early <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 5)=="early"), 
   c(1994, 2007),
-  x_barplot_range)
+  x_barplot_range) + 
+  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
 ineq_plot_early
 
 ineq_plot_late <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 4)=="late"), 
   c(2008, 2016),
-  x_barplot_range)
+  c(-0.1, 0.1)) + 
+  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
 ineq_plot_late
 
 full_ineq_plot <- ggpubr::ggarrange(
