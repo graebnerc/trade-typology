@@ -1,4 +1,5 @@
 # This script creates the descriptive figures in the text
+rm(list = ls())
 library(tidyverse)
 library(data.table)
 
@@ -102,7 +103,8 @@ pretty_up_ggplot <- function(old_plot,
     theme(panel.border = element_blank(),
           axis.line = element_line(),
           legend.position = "bottom",
-          legend.title = element_blank()
+          legend.title = element_blank(),
+          legend.spacing.x = unit(0.15, "cm")
     )
   if (type_x_axis=="continuous"){
     new_plot <- new_plot +    
