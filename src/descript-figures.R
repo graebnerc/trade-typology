@@ -335,7 +335,7 @@ ineq_plot_late <- make_ineq_barplot(
   filter(ineq_data_overall, 
          get_last_char(variable, 4)=="late"), 
   c(2008, 2016),
-  c(-0.1, 0.1)) + 
+  c(-4, 4)) + 
   scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
 ineq_plot_late
 
@@ -418,7 +418,7 @@ full_ineq_dynamics_plot_pre <- ggpubr::ggarrange(
 
 ggsave(filename = "output/fig_6n_inquality-changes-pre.pdf",
        plot = full_ineq_dynamics_plot_pre, 
-       height = fig_height, width = 2*fig_width)
+       height = fig_height, width = 1.2*fig_width)
 
 
 
@@ -429,4 +429,4 @@ full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
 
 ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
        plot = full_ineq_dynamics_plot_post, 
-       height = fig_height, width = 2*fig_width)
+       height = fig_height, width = 1.2*fig_width)
