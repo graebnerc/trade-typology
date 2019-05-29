@@ -271,8 +271,9 @@ get_last_char <- function(a_string, n_char){
 ineq_data_overall <- macro_data %>%
   filter(year %in% c(1994, 2007, 2008, 2016)) %>%
   select(
-    one_of("cluster", "year", "gini_post_tax", "gini_pre_tax", "wage_share")
+    one_of("cluster", "year", "gini_post_tax", "gini_pre_tax", "adjusted_wage_share")
     ) %>%
+  rename(wage_share=adjusted_wage_share) %>%
   group_by(year, cluster) %>%
   summarise_all(mean, na.rm=T) %>%
   ungroup() %>%
