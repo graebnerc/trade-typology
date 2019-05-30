@@ -2,6 +2,7 @@
 rm(list = ls())
 library(tidyverse)
 library(data.table)
+library(icaeDesign)
 
 # Set up dataset===============================================================
 set_up_macro_data <- TRUE # Extracts data from package MacroDataR
@@ -104,7 +105,7 @@ pretty_up_ggplot <- function(old_plot,
           axis.line = element_line(),
           legend.position = "bottom",
           legend.title = element_blank(),
-          legend.spacing.x = unit(0.15, "cm")
+          legend.spacing.x = unit(0.25, "cm")
     )
   if (type_x_axis=="continuous"){
     new_plot <- new_plot +    
@@ -131,7 +132,8 @@ fig_current_account <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point()
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
 fig_current_account <- pretty_up_ggplot(fig_current_account) +
   ggtitle("Current Account") + 
@@ -162,7 +164,8 @@ fig_gdp_growth <- ggplot(filter(macro_data_agg, year<2018),
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point()
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
 fig_gdp_growth <- pretty_up_ggplot(fig_gdp_growth) +
   ggtitle("Growth of real GDP") + 
@@ -193,7 +196,8 @@ fig_unemployment <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
     ) +
   geom_line() + 
-  geom_point()
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
 fig_unemployment <- pretty_up_ggplot(fig_unemployment) +
   ggtitle("Unemployment rate") + 
@@ -243,7 +247,9 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range){
     ) + 
     ggtitle(
       paste0("Changes between ", time_period[1], " and ", time_period[2])
-    )
+    ) + 
+    scale_fill_icae(palette = "mixed") + 
+    scale_color_icae(palette = "mixed")
   
   return(ineq_comparison_plot)
 }
@@ -362,7 +368,9 @@ ineq_dynamics_post <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point()
+  geom_point() + 
+  scale_color_icae(palette = "mixed") +
+  scale_fill_icae(palette = "mixed")
 
 ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
   ggtitle("Income inequality (Gini post tax)") + 
@@ -375,7 +383,9 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
   scale_x_continuous(
     limits = c(1994, 2017),
     breaks = seq(1994, 2016, 2), 
-    expand = c(0, 0))
+    expand = c(0, 0)) + 
+  scale_color_icae(palette = "mixed") +
+  scale_fill_icae(palette = "mixed")
 
 ineq_dynamics_post
 
@@ -392,7 +402,9 @@ ineq_dynamics_pre <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point()
+  geom_point() + 
+  scale_color_icae(palette = "mixed") +
+  scale_fill_icae(palette = "mixed")
 
 ineq_dynamics_pre <- pretty_up_ggplot(ineq_dynamics_pre) +
   ggtitle("Income inequality (Gini pre tax)") + 
@@ -405,7 +417,9 @@ ineq_dynamics_pre <- pretty_up_ggplot(ineq_dynamics_pre) +
   scale_x_continuous(
     limits = c(1994, 2017),
     breaks = seq(1994, 2016, 2), 
-    expand = c(0, 0))
+    expand = c(0, 0)) + 
+  scale_color_icae(palette = "mixed") +
+  scale_fill_icae(palette = "mixed")
 
 ineq_dynamics_pre
 
