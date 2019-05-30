@@ -6,6 +6,7 @@ library(haven)
 library(factoextra)
 library(NbClust)
 library(cluster)
+library(icaeDesign)
 # TODO Identify source of difference with branch master
 make_taxonomy_plots <- FALSE # Set to T to make taxonomy plots as in JEE (but not yet updated)
 test_nb_clusters <- FALSE

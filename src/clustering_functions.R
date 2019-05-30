@@ -1,3 +1,6 @@
+icae_cols <- c("#006600", "#ff9900", "#002b80", 
+               "#8600b3","#d8c469", "#800000")
+
 #' Clustering
 #' 
 #' Conducts the clustering
@@ -28,19 +31,26 @@ do_clustering <- function(data_file,
       cluster::agnes(method = clustering_method) # Compute hierachical clustering
   }
   
+  if (n_groups==6){
+    colors_clustering <- icae_cols
+  } else{
+    colors_clustering <- RColorBrewer::brewer.pal(n_groups, "Dark2")
+  }
+  
+  
   cluster_plot <- factoextra::fviz_dend(clustering_object, 
                                         k = nb_groups, 
                                         cex = 0.75, # label size
                                         rect = TRUE, # Add rectangle around groups
                                         rect_fill = TRUE,
                                         color_labels_by_k = TRUE, # color labels by groups
-                                        k_colors = RColorBrewer::brewer.pal(
-                                          n_groups, "Dark2"),
-                                        rect_border = RColorBrewer::brewer.pal(
-                                          n_groups, "Dark2"),
+                                        k_colors = colors_clustering,
+                                        rect_border = colors_clustering,
                                         horiz = TRUE
-  ) + theme(axis.text.x = element_blank(),
-            axis.ticks.x = element_blank())
+                                        ) + 
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank()
+          )
   return_list <- list(
     "cluster_obj" = clustering_object,
     "cluster_data" = cluster_data,
