@@ -182,16 +182,15 @@ ggsave(filename = "output/fig_3_current-account.pdf",
        width = fig_width, height = fig_height)
 
 
-# Figure 4: GDP growth---------------------------------------------------------
-
-fig_gdp_growth <- ggplot(filter(macro_data_agg, year<2018), 
-                              aes(x=year,
-                                  y=gdp_real_lcu_growth_fn1,
-                                  color=cluster)
+# Figure 4: Cumulative GDP per capita growth-----------------------------------
+fig_gdp_pc_cgrowth <- ggplot(filter(macro_data_agg, year<2018), 
+                          aes(x=year,
+                              y=gdp_real_pc_lcu_cgrowth_fn1,
+                              color=cluster)
 ) + 
   geom_ribbon(
-    aes(ymin = gdp_real_lcu_growth_fn1 - 0.5*gdp_real_lcu_growth_fn2, 
-        ymax = gdp_real_lcu_growth_fn1 + 0.5*gdp_real_lcu_growth_fn2,
+    aes(ymin = gdp_real_pc_lcu_cgrowth_fn1 - 0.5*gdp_real_pc_lcu_cgrowth_fn2, 
+        ymax = gdp_real_pc_lcu_cgrowth_fn1 + 0.5*gdp_real_pc_lcu_cgrowth_fn2,
         fill=cluster), 
     alpha=0.5, color=NA
   ) +
@@ -199,18 +198,19 @@ fig_gdp_growth <- ggplot(filter(macro_data_agg, year<2018),
   geom_point() + 
   scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
-fig_gdp_growth <- pretty_up_ggplot(fig_gdp_growth) +
-  ggtitle("Growth of real GDP") + 
+fig_gdp_pc_cgrowth <- pretty_up_ggplot(fig_gdp_pc_cgrowth) +
+  ggtitle("Cumulative annual growth of real GDP per capita") + 
   scale_y_continuous(
-    labels = scales::percent_format(accuracy = 1, scale = 1)
+    labels = scales::percent_format(scale = 100)
   ) +
+  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
   theme(
     axis.title = element_blank()
   )
 
-fig_gdp_growth
+fig_gdp_pc_cgrowth
 
-ggsave(filename = "output/fig_4_gdp-growth.pdf", 
+ggsave(filename = "output/fig_4_gdp-pc-cumul-growth.pdf", 
        width = fig_width, height = fig_height)
 
 
