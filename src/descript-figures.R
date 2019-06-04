@@ -20,6 +20,7 @@ if (set_up_macro_data){
   macro_data <- macro_data %>%
     dplyr::select(dplyr::one_of("iso3c", "year", "current_account_GDP_ameco", 
                                 "unemp_rate", "gdp_real_lcu_growth", 
+                                "gdp_real_lcu", "gdp_real_pc_lcu",
                                 "gini_post_tax", "gini_pre_tax", "wage_share")
     ) %>%
     dplyr::filter(iso3c %in% countries_considered, 
@@ -81,6 +82,50 @@ for (cl in names(clustering)){
   macro_data <- macro_data %>%
     mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
 }
+
+# Add cumulative growth rates--------------------------------------------------
+
+#' Calculate compound annual growth rate
+#' 
+#' @param CV Current value
+#' @param SV Start value
+#' @param CT Current time
+#' @param ST Start time
+#' @return Compound annual growth rate from \code{ST} to \code{CT}
+cagr <- function(CV, SV, CT, ST){
+  if (CT==ST){
+    return(0.0)
+  } else{
+    result <- (CV/SV)**(1/(CT-ST))
+    result <- result - 1
+    return(result)
+  }
+}
+
+first_year <- 1995 # chosen for data availability
+last_year <- 2017 # chosen for data availability
+macro_data_cumul_growth <- macro_data %>%
+  select(
+    one_of("iso3c", "year", "current_account_GDP_ameco",
+           "gdp_real_lcu", "gdp_real_pc_lcu") 
+    ) %>% 
+  filter(
+    year >= first_year, 
+    year <= last_year,
+    iso3c=="AUT"
+  ) %>%
+  mutate(
+    current_account_GDP_ameco_cgrowth = (current_account_GDP_ameco/first(current_account_GDP_ameco)**(1/(year-first(year)))),
+    gdp_real_lcu_cgrowth = gdp_real_lcu-first(gdp_real_lcu),
+    gdp_real_pc_lcu_cgrowth = gdp_real_pc_lcu-first(gdp_real_pc_lcu)
+  ) %>%
+  select(
+    one_of("iso3c", "current_account_GDP_ameco_cgrowth", 
+           "gdp_real_lcu_cgrowth", "gdp_real_pc_lcu_cgrowth")
+  )
+head(macro_data_cumul_growth)
+
+# Merge macro data-------------------------------------------------------------
 
 macro_data_agg <- macro_data %>%
   select(-iso3c) %>%
