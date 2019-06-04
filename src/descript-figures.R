@@ -495,7 +495,7 @@ ggsave(filename = "output/fig_6_inquality-changes.pdf",
        height = fig_height, width = 2*fig_width)
 
 # new alternative--------------------------------------------------------------
-
+gini_x_range <- c(1994, 2016)
 ineq_dynamics_post <- ggplot(macro_data_agg, 
                              aes(x=year,
                                  y=gini_post_tax_fn1,
@@ -521,9 +521,9 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
     axis.title = element_blank()
   ) + 
   scale_x_continuous(
-    limits = c(1994, 2017),
+    limits = gini_x_range,
     breaks = seq(1994, 2016, 2), 
-    expand = c(0, 0)) + 
+    expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))) + 
   scale_color_icae(palette = "mixed") +
   scale_fill_icae(palette = "mixed")
 
@@ -555,12 +555,11 @@ ineq_dynamics_pre <- pretty_up_ggplot(ineq_dynamics_pre) +
     axis.title = element_blank()
   ) + 
   scale_x_continuous(
-    limits = c(1994, 2017),
+    limits = gini_x_range,
     breaks = seq(1994, 2016, 2), 
-    expand = c(0, 0)) + 
+    expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))) + 
   scale_color_icae(palette = "mixed") +
   scale_fill_icae(palette = "mixed")
-
 ineq_dynamics_pre
 
 
