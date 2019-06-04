@@ -18,9 +18,9 @@ if (set_up_macro_data){
   
   macro_data <- MacroDataR::macro_data
   macro_data <- macro_data %>%
-    dplyr::select(dplyr::one_of("iso3c", "year", "current_account_GDP_ameco", 
-                                "unemp_rate", "gdp_real_lcu_growth", 
-                                "gdp_real_lcu", "gdp_real_pc_lcu",
+    dplyr::select(dplyr::one_of("iso3c", "year", "current_account_GDP_ameco",
+                                "unemp_rate", 
+                                "gdp_real_ppp", "gdp_real_pc_ppp",
                                 "gini_post_tax", "gini_pre_tax", "wage_share")
     ) %>%
     dplyr::filter(iso3c %in% countries_considered, 
@@ -90,7 +90,7 @@ min_CA <- abs(floor(min(macro_data$current_account_GDP_ameco, na.rm=T)))
 macro_data_cumul_growth <- data.table(macro_data)
 macro_data_cumul_growth <- macro_data_cumul_growth[
   year>=first_year & year<=last_year, 
-  .(year, iso3c, gdp_real_lcu, current_account_GDP_ameco, gdp_real_pc_lcu)
+  .(year, iso3c, gdp_real_ppp, current_account_GDP_ameco, gdp_real_pc_ppp)
   ]
 macro_data_cumul_growth[
   , current_account_GDP_ameco_cgrowth:= 
@@ -105,24 +105,24 @@ macro_data_cumul_growth[
     .(iso3c)
     ]
 macro_data_cumul_growth[
-  , gdp_real_lcu_cgrowth:= (gdp_real_lcu/first(gdp_real_lcu))**
+  , gdp_real_ppp_cgrowth:= (gdp_real_ppp/first(gdp_real_ppp))**
     (1/(year-first(year)))-1, 
   .(iso3c)
-  ][, gdp_real_lcu_base95:=(
-    gdp_real_lcu/first(gdp_real_lcu))*100, .(iso3c)
+  ][, gdp_real_ppp_base95:=(
+    gdp_real_ppp/first(gdp_real_ppp))*100, .(iso3c)
     ]
 macro_data_cumul_growth[
-  , gdp_real_pc_lcu_cgrowth:= (gdp_real_pc_lcu/first(gdp_real_pc_lcu))**
+  , gdp_real_pc_ppp_cgrowth:= (gdp_real_pc_ppp/first(gdp_real_pc_ppp))**
     (1/(year-first(year)))-1, 
   .(iso3c)
-  ][, gdp_real_pc_lcu_base95:=(
-    gdp_real_pc_lcu/first(gdp_real_pc_lcu))*100, .(iso3c)
+  ][, gdp_real_pc_ppp_base95:=(
+    gdp_real_pc_ppp/first(gdp_real_pc_ppp))*100, .(iso3c)
     ]
 macro_data_cumul_growth <- macro_data_cumul_growth[
   , .(year, iso3c, current_account_GDP_ameco_cgrowth, 
-      gdp_real_lcu_cgrowth, gdp_real_pc_lcu_cgrowth,
+      gdp_real_ppp_cgrowth, gdp_real_pc_ppp_cgrowth,
       current_account_GDP_ameco_base95,
-      gdp_real_lcu_base95, gdp_real_pc_lcu_base95,current_account_GDP_ameco_pos)]
+      gdp_real_ppp_base95, gdp_real_pc_ppp_base95,current_account_GDP_ameco_pos)]
 
 # Merge macro data-------------------------------------------------------------
 
@@ -278,12 +278,12 @@ ggsave(plot = current_account_figures, filename = "output/CA-figs.pdf", height =
 # Figure 4: Cumulative GDP per capita growth-----------------------------------
 fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
                              aes(x=year,
-                                 y=gdp_real_pc_lcu_fn1,
+                                 y=gdp_real_pc_ppp_fn1,
                                  color=cluster)
 ) + 
   geom_ribbon(
-    aes(ymin = gdp_real_pc_lcu_fn1 - 0.5*gdp_real_pc_lcu_fn2, 
-        ymax = gdp_real_pc_lcu_fn1 + 0.5*gdp_real_pc_lcu_fn2,
+    aes(ymin = gdp_real_pc_ppp_fn1 - 0.5*gdp_real_pc_ppp_fn2, 
+        ymax = gdp_real_pc_ppp_fn1 + 0.5*gdp_real_pc_ppp_fn2,
         fill=cluster), 
     alpha=0.5, color=NA
   ) +
@@ -305,12 +305,12 @@ ggsave(filename = "output/fig_4_gdp-pc.pdf",
 
 fig_gdp_pc_cgrowth <- ggplot(filter(macro_data_agg, year<2018), 
                           aes(x=year,
-                              y=gdp_real_pc_lcu_cgrowth_fn1,
+                              y=gdp_real_pc_ppp_cgrowth_fn1,
                               color=cluster)
 ) + 
   geom_ribbon(
-    aes(ymin = gdp_real_pc_lcu_cgrowth_fn1 - 0.5*gdp_real_pc_lcu_cgrowth_fn2, 
-        ymax = gdp_real_pc_lcu_cgrowth_fn1 + 0.5*gdp_real_pc_lcu_cgrowth_fn2,
+    aes(ymin = gdp_real_pc_ppp_cgrowth_fn1 - 0.5*gdp_real_pc_ppp_cgrowth_fn2, 
+        ymax = gdp_real_pc_ppp_cgrowth_fn1 + 0.5*gdp_real_pc_ppp_cgrowth_fn2,
         fill=cluster), 
     alpha=0.5, color=NA
   ) +
@@ -336,12 +336,12 @@ ggsave(filename = "output/fig_4_gdp-pc-cumul-growth.pdf",
 
 fig_gdp_pc_base95 <- ggplot(filter(macro_data_agg, year<2018), 
                              aes(x=year,
-                                 y=gdp_real_pc_lcu_base95_fn1,
+                                 y=gdp_real_pc_ppp_base95_fn1,
                                  color=cluster)
 ) + 
   geom_ribbon(
-    aes(ymin = gdp_real_pc_lcu_base95_fn1 - 0.5*gdp_real_pc_lcu_base95_fn2, 
-        ymax = gdp_real_pc_lcu_base95_fn1 + 0.5*gdp_real_pc_lcu_base95_fn2,
+    aes(ymin = gdp_real_pc_ppp_base95_fn1 - 0.5*gdp_real_pc_ppp_base95_fn2, 
+        ymax = gdp_real_pc_ppp_base95_fn1 + 0.5*gdp_real_pc_ppp_base95_fn2,
         fill=cluster), 
     alpha=0.5, color=NA
   ) +
