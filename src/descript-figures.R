@@ -192,6 +192,66 @@ fig_current_account
 ggsave(filename = "output/fig_3_current-account.pdf", 
        width = fig_width, height = fig_height)
 
+# Figure 3: Current Account (cumulative change)--------------------------------
+fig_current_account_cgrowth <- ggplot(macro_data_agg, 
+                              aes(x=year,
+                                  y=current_account_GDP_ameco_cgrowth_fn1,
+                                  color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = current_account_GDP_ameco_cgrowth_fn1 - 0.5*current_account_GDP_ameco_cgrowth_fn2, 
+        ymax = current_account_GDP_ameco_cgrowth_fn1 + 0.5*current_account_GDP_ameco_cgrowth_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+
+fig_current_account_cgrowth <- pretty_up_ggplot(fig_current_account_cgrowth) +
+  ggtitle("Current Account (compound average growth rate)") + 
+  scale_y_continuous(
+    labels = scales::percent_format(scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_current_account_cgrowth
+
+ggsave(filename = "output/fig_3_current-account-cumul-growth.pdf", 
+       width = fig_width, height = fig_height)
+
+# Figure 3: Current Account (1995=100)--------------------------------
+fig_current_account_base95 <- ggplot(macro_data_agg, 
+                                      aes(x=year,
+                                          y=current_account_GDP_ameco_base95_fn1,
+                                          color=cluster)
+) + 
+  # geom_ribbon(
+  #   aes(ymin = current_account_GDP_ameco_base95_fn1 - 0.5*current_account_GDP_ameco_base95_fn2, 
+  #       ymax = current_account_GDP_ameco_base95_fn1 + 0.5*current_account_GDP_ameco_base95_fn2,
+  #       fill=cluster), 
+  #   alpha=0.5, color=NA
+  # ) +
+  geom_line() + 
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+
+fig_current_account_base95 <- pretty_up_ggplot(fig_current_account_base95) +
+  ggtitle("Current Account (1995=100)") + 
+  scale_y_continuous(
+    labels = scales::percent_format(scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_current_account_base95
+
+ggsave(filename = "output/fig_3_current-account-base1995.pdf", 
+       width = fig_width, height = fig_height)
+
 
 # Figure 4: Cumulative GDP per capita growth-----------------------------------
 fig_gdp_pc_cgrowth <- ggplot(filter(macro_data_agg, year<2018), 
@@ -242,9 +302,6 @@ fig_gdp_pc_base95 <- ggplot(filter(macro_data_agg, year<2018),
 
 fig_gdp_pc_base95 <- pretty_up_ggplot(fig_gdp_pc_base95) +
   ggtitle("Real GDP per capita (1995=100)") + 
-  scale_y_continuous(
-    labels = scales::percent_format(scale = 1, accuracy = 1)
-  ) +
   scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
   theme(
     axis.title = element_blank()
@@ -254,6 +311,14 @@ fig_gdp_pc_base95
 
 ggsave(filename = "output/fig_4_gdp-pc-base95.pdf", 
        width = fig_width, height = fig_height)
+
+gdp_rel_ch_plot <- ggpubr::ggarrange(
+  fig_gdp_pc_cgrowth, fig_gdp_pc_base95, 
+  ncol = 2, nrow = 1, legend = "bottom", 
+  common.legend = TRUE)
+ggsave(plot = gdp_rel_ch_plot, 
+       filename = "output/fig_4_gdp-pc-full.pdf",
+       width = fig_width*2, height = fig_height)
 
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
