@@ -291,9 +291,17 @@ fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018),
   geom_point() + 
   scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
+ks <- function (x) { 
+  scales::number_format(accuracy = 1,
+                        scale = 1/1000,
+                        suffix = "k",
+                        big.mark = ".")(x) 
+}
+
 fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
   ggtitle("Real GDP per capita") + 
   scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
+  scale_y_continuous(labels = ks) +
   theme(
     axis.title = element_blank()
   )
@@ -362,12 +370,12 @@ ggsave(filename = "output/fig_4_gdp-pc-base95.pdf",
        width = fig_width, height = fig_height)
 
 gdp_rel_ch_plot <- ggpubr::ggarrange(
-  fig_gdp_pc_cgrowth, fig_gdp_pc_base95, 
-  ncol = 2, nrow = 1, legend = "bottom", 
+  fig_gdp_pc, fig_gdp_pc_cgrowth, fig_gdp_pc_base95,
+  ncol = 3, nrow = 1, legend = "bottom", 
   common.legend = TRUE)
 ggsave(plot = gdp_rel_ch_plot, 
        filename = "output/fig_4_gdp-pc-full.pdf",
-       width = fig_width*1.5, height = fig_height)
+       width = fig_width*2, height = fig_height)
 
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
@@ -630,3 +638,4 @@ full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
 ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
        plot = full_ineq_dynamics_plot_post, 
        height = fig_height, width = 1.2*fig_width)
+
