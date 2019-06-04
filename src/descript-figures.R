@@ -98,7 +98,8 @@ macro_data_cumul_growth[
   .(iso3c)
   ][, current_account_GDP_ameco_base95:=(
     current_account_GDP_ameco-first(current_account_GDP_ameco)
-    )/first(current_account_GDP_ameco)*100, .(iso3c)
+    )/first(current_account_GDP_ameco)*100+100, 
+    .(iso3c)
     ]
 macro_data_cumul_growth[
   , gdp_real_lcu_cgrowth:= (gdp_real_lcu/first(gdp_real_lcu))**
@@ -106,7 +107,7 @@ macro_data_cumul_growth[
   .(iso3c)
   ][, gdp_real_lcu_base95:=(
     gdp_real_lcu/first(gdp_real_lcu)
-    )/first(gdp_real_lcu)*100, .(iso3c)
+    )/first(gdp_real_lcu)*100+100, .(iso3c)
     ]
 macro_data_cumul_growth[
   , gdp_real_pc_lcu_cgrowth:= (gdp_real_pc_lcu/first(gdp_real_pc_lcu))**
@@ -114,7 +115,7 @@ macro_data_cumul_growth[
   .(iso3c)
   ][, gdp_real_pc_lcu_base95:=(
     gdp_real_pc_lcu-first(gdp_real_pc_lcu)
-    )/first(gdp_real_pc_lcu)*100, .(iso3c)
+    )/first(gdp_real_pc_lcu)*100+100, .(iso3c)
     ]
 macro_data_cumul_growth <- macro_data_cumul_growth[
   , .(year, iso3c, current_account_GDP_ameco_cgrowth, 
