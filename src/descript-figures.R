@@ -86,6 +86,7 @@ for (cl in names(clustering)){
 # Add cumulative growth rates--------------------------------------------------
 first_year <- 1995 # chosen for data availability
 last_year <- 2017 # chosen for data availability
+min_CA <- abs(floor(min(macro_data$current_account_GDP_ameco, na.rm=T)))
 macro_data_cumul_growth <- data.table(macro_data)
 macro_data_cumul_growth <- macro_data_cumul_growth[
   year>=first_year & year<=last_year, 
@@ -96,9 +97,11 @@ macro_data_cumul_growth[
     (current_account_GDP_ameco/first(current_account_GDP_ameco))**
     (1/(year-first(year)))-1, 
   .(iso3c)
-  ][, current_account_GDP_ameco_base95:=(
-    current_account_GDP_ameco-first(current_account_GDP_ameco)
-    )/first(current_account_GDP_ameco)*100+100, 
+  ]
+macro_data_cumul_growth[
+  , current_account_GDP_ameco_pos:=current_account_GDP_ameco+min_CA
+  ][ , current_account_GDP_ameco_base95:=(current_account_GDP_ameco_pos/
+                                            first(current_account_GDP_ameco_pos))*100, 
     .(iso3c)
     ]
 macro_data_cumul_growth[
@@ -106,22 +109,20 @@ macro_data_cumul_growth[
     (1/(year-first(year)))-1, 
   .(iso3c)
   ][, gdp_real_lcu_base95:=(
-    gdp_real_lcu/first(gdp_real_lcu)
-    )/first(gdp_real_lcu)*100+100, .(iso3c)
+    gdp_real_lcu/first(gdp_real_lcu))*100, .(iso3c)
     ]
 macro_data_cumul_growth[
   , gdp_real_pc_lcu_cgrowth:= (gdp_real_pc_lcu/first(gdp_real_pc_lcu))**
     (1/(year-first(year)))-1, 
   .(iso3c)
   ][, gdp_real_pc_lcu_base95:=(
-    gdp_real_pc_lcu-first(gdp_real_pc_lcu)
-    )/first(gdp_real_pc_lcu)*100+100, .(iso3c)
+    gdp_real_pc_lcu/first(gdp_real_pc_lcu))*100, .(iso3c)
     ]
 macro_data_cumul_growth <- macro_data_cumul_growth[
   , .(year, iso3c, current_account_GDP_ameco_cgrowth, 
       gdp_real_lcu_cgrowth, gdp_real_pc_lcu_cgrowth,
       current_account_GDP_ameco_base95,
-      gdp_real_lcu_base95, gdp_real_pc_lcu_base95)]
+      gdp_real_lcu_base95, gdp_real_pc_lcu_base95,current_account_GDP_ameco_pos)]
 
 # Merge macro data-------------------------------------------------------------
 
@@ -229,21 +230,18 @@ fig_current_account_base95 <- ggplot(macro_data_agg,
                                           y=current_account_GDP_ameco_base95_fn1,
                                           color=cluster)
 ) + 
-  # geom_ribbon(
-  #   aes(ymin = current_account_GDP_ameco_base95_fn1 - 0.5*current_account_GDP_ameco_base95_fn2, 
-  #       ymax = current_account_GDP_ameco_base95_fn1 + 0.5*current_account_GDP_ameco_base95_fn2,
-  #       fill=cluster), 
-  #   alpha=0.5, color=NA
-  # ) +
+  geom_ribbon(
+    aes(ymin = current_account_GDP_ameco_base95_fn1 - 0.5*current_account_GDP_ameco_base95_fn2,
+        ymax = current_account_GDP_ameco_base95_fn1 + 0.5*current_account_GDP_ameco_base95_fn2,
+        fill=cluster),
+    alpha=0.5, color=NA
+  ) +
   geom_line() + 
   geom_point() + 
   scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
 fig_current_account_base95 <- pretty_up_ggplot(fig_current_account_base95) +
   ggtitle("Current Account (1995=100)") + 
-  scale_y_continuous(
-    labels = scales::percent_format(scale = 1)
-  ) +
   theme(
     axis.title = element_blank()
   )
@@ -253,7 +251,10 @@ fig_current_account_base95
 ggsave(filename = "output/fig_3_current-account-base1995.pdf", 
        width = fig_width, height = fig_height)
 
-
+current_account_figures <- ggpubr::ggarrange(
+  fig_current_account, fig_current_account_cgrowth, fig_current_account_base95, ncol = 1, nrow = 3
+)
+ggsave(plot = current_account_figures, filename = "output/CA-figs.pdf", height = fig_height*2.5, width = fig_width)
 # Figure 4: Cumulative GDP per capita growth-----------------------------------
 fig_gdp_pc_cgrowth <- ggplot(filter(macro_data_agg, year<2018), 
                           aes(x=year,
@@ -319,7 +320,7 @@ gdp_rel_ch_plot <- ggpubr::ggarrange(
   common.legend = TRUE)
 ggsave(plot = gdp_rel_ch_plot, 
        filename = "output/fig_4_gdp-pc-full.pdf",
-       width = fig_width*2, height = fig_height)
+       width = fig_width*1.5, height = fig_height)
 
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
