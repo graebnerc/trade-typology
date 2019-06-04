@@ -96,20 +96,31 @@ macro_data_cumul_growth[
     (current_account_GDP_ameco/first(current_account_GDP_ameco))**
     (1/(year-first(year)))-1, 
   .(iso3c)
-  ]
+  ][, current_account_GDP_ameco_base95:=(
+    current_account_GDP_ameco-first(current_account_GDP_ameco)
+    )/first(current_account_GDP_ameco)*100, .(iso3c)
+    ]
 macro_data_cumul_growth[
   , gdp_real_lcu_cgrowth:= (gdp_real_lcu/first(gdp_real_lcu))**
     (1/(year-first(year)))-1, 
   .(iso3c)
-  ]
+  ][, gdp_real_lcu_base95:=(
+    gdp_real_lcu/first(gdp_real_lcu)
+    )/first(gdp_real_lcu)*100, .(iso3c)
+    ]
 macro_data_cumul_growth[
   , gdp_real_pc_lcu_cgrowth:= (gdp_real_pc_lcu/first(gdp_real_pc_lcu))**
     (1/(year-first(year)))-1, 
   .(iso3c)
-  ]
+  ][, gdp_real_pc_lcu_base95:=(
+    gdp_real_pc_lcu-first(gdp_real_pc_lcu)
+    )/first(gdp_real_pc_lcu)*100, .(iso3c)
+    ]
 macro_data_cumul_growth <- macro_data_cumul_growth[
   , .(year, iso3c, current_account_GDP_ameco_cgrowth, 
-      gdp_real_lcu_cgrowth, gdp_real_pc_lcu_cgrowth)]
+      gdp_real_lcu_cgrowth, gdp_real_pc_lcu_cgrowth,
+      current_account_GDP_ameco_base95,
+      gdp_real_lcu_base95, gdp_real_pc_lcu_base95)]
 
 # Merge macro data-------------------------------------------------------------
 
@@ -213,6 +224,36 @@ fig_gdp_pc_cgrowth
 ggsave(filename = "output/fig_4_gdp-pc-cumul-growth.pdf", 
        width = fig_width, height = fig_height)
 
+
+fig_gdp_pc_base95 <- ggplot(filter(macro_data_agg, year<2018), 
+                             aes(x=year,
+                                 y=gdp_real_pc_lcu_base95_fn1,
+                                 color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = gdp_real_pc_lcu_base95_fn1 - 0.5*gdp_real_pc_lcu_base95_fn2, 
+        ymax = gdp_real_pc_lcu_base95_fn1 + 0.5*gdp_real_pc_lcu_base95_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+
+fig_gdp_pc_base95 <- pretty_up_ggplot(fig_gdp_pc_base95) +
+  ggtitle("Real GDP per capita (1995=100)") + 
+  scale_y_continuous(
+    labels = scales::percent_format(scale = 1, accuracy = 1)
+  ) +
+  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_gdp_pc_base95
+
+ggsave(filename = "output/fig_4_gdp-pc-base95.pdf", 
+       width = fig_width, height = fig_height)
 
 # Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
 
