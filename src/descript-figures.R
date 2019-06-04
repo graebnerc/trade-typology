@@ -370,7 +370,7 @@ ggsave(filename = "output/fig_4_gdp-pc-base95.pdf",
        width = fig_width, height = fig_height)
 
 gdp_rel_ch_plot <- ggpubr::ggarrange(
-  fig_gdp_pc, fig_gdp_pc_cgrowth, fig_gdp_pc_base95,
+  fig_gdp_pc_cgrowth, fig_gdp_pc_base95,fig_gdp_pc, 
   ncol = 3, nrow = 1, legend = "bottom", 
   common.legend = TRUE)
 ggsave(plot = gdp_rel_ch_plot, 
@@ -632,8 +632,10 @@ ggsave(filename = "output/fig_6n_inquality-changes-pre.pdf",
 
 full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
   ineq_plot_overall, ineq_dynamics_post, 
-  ncol = 2, legend = "bottom", common.legend = TRUE
-)
+  ncol = 2, legend = "bottom", common.legend = TRUE, 
+  labels = c("A)", "B)"), 
+  font.label = list(face="bold")
+  )
 
 ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
        plot = full_ineq_dynamics_plot_post, 
