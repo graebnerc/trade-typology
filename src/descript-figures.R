@@ -274,7 +274,35 @@ current_account_figures <- ggpubr::ggarrange(
   fig_current_account, fig_current_account_cgrowth, fig_current_account_base95, ncol = 1, nrow = 3
 )
 ggsave(plot = current_account_figures, filename = "output/CA-figs.pdf", height = fig_height*2.5, width = fig_width)
+
 # Figure 4: Cumulative GDP per capita growth-----------------------------------
+fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
+                             aes(x=year,
+                                 y=gdp_real_pc_lcu_fn1,
+                                 color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = gdp_real_pc_lcu_fn1 - 0.5*gdp_real_pc_lcu_fn2, 
+        ymax = gdp_real_pc_lcu_fn1 + 0.5*gdp_real_pc_lcu_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+
+fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
+  ggtitle("Real GDP per capita") + 
+  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_gdp_pc
+
+ggsave(filename = "output/fig_4_gdp-pc.pdf", 
+       width = fig_width, height = fig_height)
+
 fig_gdp_pc_cgrowth <- ggplot(filter(macro_data_agg, year<2018), 
                           aes(x=year,
                               y=gdp_real_pc_lcu_cgrowth_fn1,
