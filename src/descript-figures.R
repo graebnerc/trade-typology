@@ -53,7 +53,7 @@ clustering <- list(
 )
 
 clustering <- list(
-  "primary_goods" = 
+  "Primary goods" = 
     countrycode::countrycode(
       c("Latvia", "Estonia"),
       "country.name", "iso3c"),
@@ -63,13 +63,13 @@ clustering <- list(
   "UK" = countrycode::countrycode(
     c("United Kingdom"),
     "country.name", "iso3c"),
-  "finance" = countrycode::countrycode(
+  "Finance" = countrycode::countrycode(
     c("Luxembourg"),
     "country.name", "iso3c"),
-  "periphery" = countrycode::countrycode(
+  "Periphery" = countrycode::countrycode(
     c("Greece", "Portugal", "Spain", "Italy", "France"),
     "country.name", "iso3c"),
-  "high_tech" = countrycode::countrycode(
+  "High tech" = countrycode::countrycode(
     c("Sweden", "Finland", "Denmark", "Netherlands", 
                   "Belgium", "Germany", "Austria", "Ireland"),
     "country.name", "iso3c")
@@ -185,6 +185,12 @@ fig_current_account <- pretty_up_ggplot(fig_current_account) +
   scale_y_continuous(
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
+  scale_x_continuous(limits = c(1995, 2017), 
+                     breaks = seq(1995, 2015, 5),
+                     expand = expand_scale(c(0, 0), 
+                                           c(0, 0.25)
+                     )
+  ) +
   theme(
     axis.title = element_blank()
   )
@@ -215,6 +221,12 @@ fig_current_account_cgrowth <- pretty_up_ggplot(fig_current_account_cgrowth) +
   scale_y_continuous(
     labels = scales::percent_format(scale = 1)
   ) +
+  scale_x_continuous(limits = c(1995, 2017), 
+                     breaks = seq(1995, 2015, 5),
+                     expand = expand_scale(c(0, 0), 
+                                           c(0, 0.25)
+                                           )
+                     ) +
   theme(
     axis.title = element_blank()
   )
@@ -242,6 +254,13 @@ fig_current_account_base95 <- ggplot(macro_data_agg,
 
 fig_current_account_base95 <- pretty_up_ggplot(fig_current_account_base95) +
   ggtitle("Current Account (1995=100)") + 
+  scale_y_continuous(breaks = seq(0, 160, 20)) +
+  scale_x_continuous(limits = c(1995, 2017), 
+                     breaks = seq(1995, 2015, 5),
+                     expand = expand_scale(c(0, 0), 
+                                           c(0, 0.25)
+                     )
+  ) +
   theme(
     axis.title = element_blank()
   )
