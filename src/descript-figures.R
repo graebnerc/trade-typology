@@ -84,50 +84,37 @@ for (cl in names(clustering)){
 }
 
 # Add cumulative growth rates--------------------------------------------------
-
-#' Calculate compound annual growth rate
-#' 
-#' @param CV Current value
-#' @param SV Start value
-#' @param CT Current time
-#' @param ST Start time
-#' @return Compound annual growth rate from \code{ST} to \code{CT}
-cagr <- function(CV, SV, CT, ST){
-  if (CT==ST){
-    return(0.0)
-  } else{
-    result <- (CV/SV)**(1/(CT-ST))
-    result <- result - 1
-    return(result)
-  }
-}
-
 first_year <- 1995 # chosen for data availability
 last_year <- 2017 # chosen for data availability
-macro_data_cumul_growth <- macro_data %>%
-  select(
-    one_of("iso3c", "year", "current_account_GDP_ameco",
-           "gdp_real_lcu", "gdp_real_pc_lcu") 
-    ) %>% 
-  filter(
-    year >= first_year, 
-    year <= last_year,
-    iso3c=="AUT"
-  ) %>%
-  mutate(
-    current_account_GDP_ameco_cgrowth = (current_account_GDP_ameco/first(current_account_GDP_ameco)**(1/(year-first(year)))),
-    gdp_real_lcu_cgrowth = gdp_real_lcu-first(gdp_real_lcu),
-    gdp_real_pc_lcu_cgrowth = gdp_real_pc_lcu-first(gdp_real_pc_lcu)
-  ) %>%
-  select(
-    one_of("iso3c", "current_account_GDP_ameco_cgrowth", 
-           "gdp_real_lcu_cgrowth", "gdp_real_pc_lcu_cgrowth")
-  )
-head(macro_data_cumul_growth)
+macro_data_cumul_growth <- data.table(macro_data)
+macro_data_cumul_growth <- macro_data_cumul_growth[
+  year>=first_year & year<=last_year, 
+  .(year, iso3c, gdp_real_lcu, current_account_GDP_ameco, gdp_real_pc_lcu)
+  ]
+macro_data_cumul_growth[
+  , current_account_GDP_ameco_cgrowth:= 
+    (current_account_GDP_ameco/first(current_account_GDP_ameco))**
+    (1/(year-first(year)))-1, 
+  .(iso3c)
+  ]
+macro_data_cumul_growth[
+  , gdp_real_lcu_cgrowth:= (gdp_real_lcu/first(gdp_real_lcu))**
+    (1/(year-first(year)))-1, 
+  .(iso3c)
+  ]
+macro_data_cumul_growth[
+  , gdp_real_pc_lcu_cgrowth:= (gdp_real_pc_lcu/first(gdp_real_pc_lcu))**
+    (1/(year-first(year)))-1, 
+  .(iso3c)
+  ]
+macro_data_cumul_growth <- macro_data_cumul_growth[
+  , .(year, iso3c, current_account_GDP_ameco_cgrowth, 
+      gdp_real_lcu_cgrowth, gdp_real_pc_lcu_cgrowth)]
 
 # Merge macro data-------------------------------------------------------------
 
 macro_data_agg <- macro_data %>%
+  left_join(., macro_data_cumul_growth, by=c("iso3c", "year")) %>%
   select(-iso3c) %>%
   group_by(year, cluster) %>%
   summarise_all(.funs = c(mean, sd), na.rm=T) %>%
