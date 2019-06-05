@@ -4,6 +4,24 @@ library(tidyverse)
 library(data.table)
 library(icaeDesign)
 
+icae_public_colors <- c(
+  `orange` = "#ff9900",
+  `purple` = "#8600b3",
+  `dark green` = "#006600",
+  `sand` = "#d8c469",
+  `dark blue` = "#002b80",
+  `dark red` = "#800000"
+  )
+
+cluster_cols <- list(
+  "High tech" = unname(icae_public_colors["dark blue"]),
+  "Periphery" = unname(icae_public_colors["purple"]),
+  "UK" = unname(icae_public_colors["dark red"]),
+  "Catchup" = unname(icae_public_colors["dark green"]),
+  "Primary goods" = unname(icae_public_colors["sand"]),
+  "Finance" = unname(icae_public_colors["orange"])
+)
+
 # Set up dataset===============================================================
 set_up_macro_data <- TRUE # Extracts data from package MacroDataR
 macro_data_file_name <- "data/descriptive_data.csv"
@@ -18,9 +36,11 @@ if (set_up_macro_data){
   
   macro_data <- MacroDataR::macro_data
   macro_data <- macro_data %>%
-    dplyr::select(dplyr::one_of("iso3c", "year", "current_account_GDP_ameco", 
-                                "unemp_rate", "gdp_real_lcu_growth", 
-                                "gini_post_tax", "gini_pre_tax", "wage_share")
+    dplyr::select(dplyr::one_of("iso3c", "year", "current_account_GDP_ameco",
+                                "unemp_rate", 
+                                "gdp_real_ppp", "gdp_real_pc_ppp",
+                                "gini_post_tax", "gini_pre_tax", "wage_share",
+                                "kof_trade_df",  "kof_fin_df", "trade_total_GDP", "trade_exp_GDP", "trade_imp_GDP")
     ) %>%
     dplyr::filter(iso3c %in% countries_considered, 
                   year>1993)
@@ -52,7 +72,7 @@ clustering <- list(
 )
 
 clustering <- list(
-  "primary_goods" = 
+  "Primary goods" = 
     countrycode::countrycode(
       c("Latvia", "Estonia"),
       "country.name", "iso3c"),
@@ -62,13 +82,13 @@ clustering <- list(
   "UK" = countrycode::countrycode(
     c("United Kingdom"),
     "country.name", "iso3c"),
-  "finance" = countrycode::countrycode(
+  "Finance" = countrycode::countrycode(
     c("Luxembourg"),
     "country.name", "iso3c"),
-  "periphery" = countrycode::countrycode(
+  "Periphery" = countrycode::countrycode(
     c("Greece", "Portugal", "Spain", "Italy", "France"),
     "country.name", "iso3c"),
-  "high_tech" = countrycode::countrycode(
+  "High tech" = countrycode::countrycode(
     c("Sweden", "Finland", "Denmark", "Netherlands", 
                   "Belgium", "Germany", "Austria", "Ireland"),
     "country.name", "iso3c")
@@ -82,12 +102,83 @@ for (cl in names(clustering)){
     mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
 }
 
+# Add cumulative growth rates--------------------------------------------------
+first_year <- 1995 # chosen for data availability
+last_year <- 2017 # chosen for data availability
+min_CA <- abs(floor(min(macro_data$current_account_GDP_ameco, na.rm=T)))
+macro_data_cumul_growth <- data.table(macro_data)
+macro_data_cumul_growth <- macro_data_cumul_growth[
+  year>=first_year & year<=last_year, 
+  .(year, iso3c, gdp_real_ppp, current_account_GDP_ameco, gdp_real_pc_ppp)
+  ]
+macro_data_cumul_growth[
+  , current_account_GDP_ameco_cgrowth:= 
+    (current_account_GDP_ameco/first(current_account_GDP_ameco))**
+    (1/(year-first(year)))-1, 
+  .(iso3c)
+  ]
+macro_data_cumul_growth[
+  , current_account_GDP_ameco_pos:=current_account_GDP_ameco+min_CA
+  ][ , current_account_GDP_ameco_base95:=(current_account_GDP_ameco_pos/
+                                            first(current_account_GDP_ameco_pos))*100, 
+    .(iso3c)
+    ]
+macro_data_cumul_growth[
+  , gdp_real_ppp_cgrowth:= (gdp_real_ppp/first(gdp_real_ppp))**
+    (1/(year-first(year)))-1, 
+  .(iso3c)
+  ][, gdp_real_ppp_base95:=(
+    gdp_real_ppp/first(gdp_real_ppp))*100, .(iso3c)
+    ]
+macro_data_cumul_growth[
+  , gdp_real_pc_ppp_cgrowth:= (gdp_real_pc_ppp/first(gdp_real_pc_ppp))**
+    (1/(year-first(year)))-1, 
+  .(iso3c)
+  ][, gdp_real_pc_ppp_base95:=(
+    gdp_real_pc_ppp/first(gdp_real_pc_ppp))*100, .(iso3c)
+    ]
+macro_data_cumul_growth <- macro_data_cumul_growth[
+  , .(year, iso3c, current_account_GDP_ameco_cgrowth, 
+      gdp_real_ppp_cgrowth, gdp_real_pc_ppp_cgrowth,
+      current_account_GDP_ameco_base95,
+      gdp_real_ppp_base95, gdp_real_pc_ppp_base95,current_account_GDP_ameco_pos)]
+
+# Merge macro data-------------------------------------------------------------
+
 macro_data_agg <- macro_data %>%
+  left_join(., macro_data_cumul_growth, by=c("iso3c", "year")) %>%
   select(-iso3c) %>%
   group_by(year, cluster) %>%
   summarise_all(.funs = c(mean, sd), na.rm=T) %>%
   ungroup()
 
+# Add cumulative data----------------------------------------------------------
+# Er meint mit cumulative einfach die Summe von 1994-2016
+macro_data_cumulated <- macro_data %>%
+  select(iso3c, year, current_account_GDP_ameco, 
+         gdp_real_pc_ppp, unemp_rate) %>%
+  filter(year>1993, year<2018) %>%
+  group_by(iso3c) %>%
+  mutate(
+    gdp_real_pc_ppp_growth=(gdp_real_pc_ppp-lag(gdp_real_pc_ppp))/lag(gdp_real_pc_ppp),
+    unemp_rate_change=(unemp_rate-lag(unemp_rate))/lag(unemp_rate)
+    ) %>%
+  summarise(CA_cum=mean(current_account_GDP_ameco, na.rm = T),
+            GDPpc_cum=mean(gdp_real_pc_ppp, na.rm = T),
+            GDPpc_growth_cum=mean(gdp_real_pc_ppp_growth, na.rm = T),
+            unemp_rates=mean(unemp_rate, na.rm = T),
+            unemp_rate_cum=mean(unemp_rate_change, na.rm = T),
+            unemp_rate_sum=sum(unemp_rate_change, na.rm = T)
+            ) %>%
+  ungroup() 
+macro_data_cumulated$cluster <- NA
+
+for (cl in names(clustering)){
+  macro_data_cumulated <- macro_data_cumulated %>%
+    mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
+}
+macro_data_cumulated <- arrange(macro_data_cumulated, cluster) %>%
+  mutate(cluster=factor(cluster, levels=unique(macro_data_cumulated$cluster), ordered = T)) 
 
 # Create figures===============================================================
 
@@ -105,7 +196,7 @@ pretty_up_ggplot <- function(old_plot,
           axis.line = element_line(),
           legend.position = "bottom",
           legend.title = element_blank(),
-          legend.spacing.x = unit(0.25, "cm")
+          legend.spacing.x = unit(0.2, "cm")
     )
   if (type_x_axis=="continuous"){
     new_plot <- new_plot +    
@@ -114,13 +205,196 @@ pretty_up_ggplot <- function(old_plot,
   return(new_plot)
 }
 
+ks <- function (x) { 
+  scales::number_format(accuracy = 1,
+                        scale = 1/1000,
+                        suffix = "k",
+                        big.mark = ".", 
+                        decimal.mark = ",")(x) 
+}
+
 fig_width <- 9
 fig_height <- 6
 
+# Figure 3: GDP per capita-----------------------------------------------------
+fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
+                     aes(x=year,
+                         y=gdp_real_pc_ppp_fn1,
+                         color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = gdp_real_pc_ppp_fn1 - 0.5*gdp_real_pc_ppp_fn2, 
+        ymax = gdp_real_pc_ppp_fn1 + 0.5*gdp_real_pc_ppp_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point()
 
-# Figure 3: Current account----------------------------------------------------
+fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
+  ggtitle("Real GDP per capita") + 
+  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
+  scale_y_continuous(labels = ks) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme(
+    axis.title = element_blank(),
+    axis.title.y = element_blank()
+  )
 
-fig_current_account <- ggplot(macro_data_agg, 
+fig_gdp_pc
+
+fig_gdp_cum_growth <- ggplot(macro_data_cumulated) + 
+  geom_bar(aes(x=reorder(iso3c, GDPpc_growth_cum), 
+               y=GDPpc_growth_cum, 
+               fill=cluster, color=cluster), 
+           stat = "identity") +
+  ggtitle("Mean GDP per capita growth (1995-2017)") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Periphery"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["UK"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Finance"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["High tech"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Catchup"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Primary goods"]]), GDPpc_growth_cum)$iso3c
+    )
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 100, accuracy = 1), 
+                     expand = c(0, 0)
+  ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title = element_blank(), 
+    axis.text.x = element_text(size = 7),
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.2, "cm")
+  )
+fig_gdp_cum_growth
+
+gdp_pc_full <- ggpubr::ggarrange(
+  fig_gdp_pc, fig_gdp_cum_growth, 
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
+  labels = c("A)", "B)"), font.label = list(face="bold")
+)
+ggsave(plot = gdp_pc_full,
+       filename = "output/fig_3_gdp-growth.pdf", 
+       width = fig_width*1.5, height = fig_height)
+
+
+# Figure 4: Unemployment rate, 1994 - 2018-------------------------------------
+
+unemp_rate <- ggplot(macro_data_agg, 
+                           aes(x=year,
+                               y=unemp_rate_fn1,
+                               color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = unemp_rate_fn1 - 0.5*unemp_rate_fn2, 
+        ymax = unemp_rate_fn1 + 0.5*unemp_rate_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point() 
+
+unemp_rate <- pretty_up_ggplot(unemp_rate) +
+  ggtitle("Unemployment rate (1995-2018)") + 
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  scale_x_continuous(limits = c(1995, 2018), 
+                     breaks = seq(1995, 2015, 5),
+                     expand = expand_scale(c(0, 0), 
+                                           c(0, 0.25))
+                     ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme(
+    axis.title = element_blank()
+  )
+unemp_rate
+
+
+unemp_cum <- ggplot(macro_data_cumulated) + 
+  geom_bar(aes(x=reorder(iso3c, unemp_rate_sum), 
+               y=unemp_rate_cum, 
+               fill=cluster, color=cluster), 
+           stat = "identity") +
+  ggtitle("Average change in the unemployment rate (1995-2017)") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Catchup"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["UK"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["High tech"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Primary goods"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Finance"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Periphery"]]), unemp_rate_cum)$iso3c
+    )
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 100, 
+                                                     accuracy = 1),
+                     breaks = seq(-0.03, 0.05, 0.01)
+  ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title = element_blank(), 
+    axis.text.x = element_text(size = 7),
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.2, "cm")
+  )
+unemp_cum
+
+
+unemp_full <- ggpubr::ggarrange(
+  unemp_rate, unemp_cum, 
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
+  labels = c("A)", "B)"), font.label = list(face="bold")
+)
+ggsave(plot = unemp_full,
+       filename = "output/fig_4_unemployment.pdf", 
+       width = fig_width*1.5, height = fig_height)
+
+# Figure 5: Current account----------------------------------------------------
+
+fig_current_account_abs <- ggplot(macro_data_agg, 
                            aes(x=year,
                                y=current_account_GDP_ameco_fn1,
                                color=cluster)
@@ -132,86 +406,81 @@ fig_current_account <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+  geom_point()
 
-fig_current_account <- pretty_up_ggplot(fig_current_account) +
-  ggtitle("Current Account") + 
+fig_current_account_abs <- pretty_up_ggplot(fig_current_account_abs) +
+  ggtitle("Current Account in % of GDP (1995-2017)") + 
   scale_y_continuous(
+    limits = c(-20, 11),
+    breaks = seq(-20, 10, 5),
     labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  scale_x_continuous(limits = c(1995, 2017), 
+                     breaks = seq(1995, 2015, 5),
+                     expand = expand_scale(c(0, 0), 
+                                           c(0, 0.25)
+                     )
   ) +
   theme(
     axis.title = element_blank()
   )
 
-fig_current_account
+fig_current_account_abs
 
-ggsave(filename = "output/fig_3_current-account.pdf", 
-       width = fig_width, height = fig_height)
-
-
-# Figure 4: GDP growth---------------------------------------------------------
-
-fig_gdp_growth <- ggplot(filter(macro_data_agg, year<2018), 
-                              aes(x=year,
-                                  y=gdp_real_lcu_growth_fn1,
-                                  color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = gdp_real_lcu_growth_fn1 - 0.5*gdp_real_lcu_growth_fn2, 
-        ymax = gdp_real_lcu_growth_fn1 + 0.5*gdp_real_lcu_growth_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
+fig_current_account_cum <- ggplot(macro_data_cumulated) + 
+  geom_bar(aes(x=reorder(iso3c, CA_cum), 
+               y=CA_cum, 
+               fill=cluster, color=cluster), 
+           stat = "identity") +
+  ggtitle("Average Current Account in % of GDP (1995-2017)") + 
+  ylab("Average current account") +  
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Periphery"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Primary goods"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["UK"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Catchup"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["High tech"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Finance"]]), CA_cum)$iso3c)
   ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_gdp_growth <- pretty_up_ggplot(fig_gdp_growth) +
-  ggtitle("Growth of real GDP") + 
   scale_y_continuous(
+    limits = c(-7.1, 7),
+    breaks = seq(-6, 6, 2),
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme_bw() +
   theme(
-    axis.title = element_blank()
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title = element_blank(), 
+    axis.text.x = element_text(size = 7),
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.2, "cm")
   )
+fig_current_account_cum
 
-fig_gdp_growth
+fig_current_account_full <- ggpubr::ggarrange(
+  fig_current_account_abs, fig_current_account_cum, 
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
+  labels = c("A)", "B)"), font.label = list(face="bold")
+)
 
-ggsave(filename = "output/fig_4_gdp-growth.pdf", 
-       width = fig_width, height = fig_height)
+ggsave(filename = "output/fig_5_current-account.pdf", 
+       width = fig_width*1.5, height = fig_height)
 
-
-# Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
-
-fig_unemployment <- ggplot(macro_data_agg, 
-                           aes(x=year,
-                               y=unemp_rate_fn1,
-                               color=cluster)
-                           ) + 
-  geom_ribbon(
-    aes(ymin = unemp_rate_fn1 - 0.5*unemp_rate_fn2, 
-        ymax = unemp_rate_fn1 + 0.5*unemp_rate_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-    ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_unemployment <- pretty_up_ggplot(fig_unemployment) +
-  ggtitle("Unemployment rate") + 
-  scale_y_continuous(
-    labels = scales::percent_format(accuracy = 1, scale = 1)
-    ) +
-  theme(
-    axis.title = element_blank()
-    )
-
-fig_unemployment
-
-ggsave(filename = "output/fig_5_unemployment.pdf", 
-       width = fig_width, height = fig_height)
 
 # Figure 6: Inequality comparison----------------------------------------------
 
@@ -246,7 +515,7 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range){
       axis.title.y = element_blank()
     ) + 
     ggtitle(
-      paste0("Changes between ", time_period[1], " and ", time_period[2])
+      paste0("Inequality in ", time_period[1], " and ", time_period[2])
     ) + 
     scale_fill_icae(palette = "mixed") + 
     scale_color_icae(palette = "mixed")
@@ -329,33 +598,8 @@ ineq_plot_overall <- make_ineq_barplot(
   scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share")) 
 ineq_plot_overall 
 
-ineq_plot_early <- make_ineq_barplot(
-  filter(ineq_data_overall, 
-         get_last_char(variable, 5)=="early"), 
-  c(1994, 2007),
-  x_barplot_range) + 
-  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
-ineq_plot_early
 
-ineq_plot_late <- make_ineq_barplot(
-  filter(ineq_data_overall, 
-         get_last_char(variable, 4)=="late"), 
-  c(2008, 2016),
-  c(-4, 4)) + 
-  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
-ineq_plot_late
-
-full_ineq_plot <- ggpubr::ggarrange(
-  ineq_plot_overall, ineq_plot_early, ineq_plot_late, 
-  ncol = 3, legend = "bottom", common.legend = TRUE
-)
-
-ggsave(filename = "output/fig_6_inquality-changes.pdf",
-       plot = full_ineq_plot, 
-       height = fig_height, width = 2*fig_width)
-
-# new alternative--------------------------------------------------------------
-
+gini_x_range <- c(1994, 2016)
 ineq_dynamics_post <- ggplot(macro_data_agg, 
                              aes(x=year,
                                  y=gini_post_tax_fn1,
@@ -381,66 +625,22 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
     axis.title = element_blank()
   ) + 
   scale_x_continuous(
-    limits = c(1994, 2017),
+    limits = gini_x_range,
     breaks = seq(1994, 2016, 2), 
-    expand = c(0, 0)) + 
+    expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))) + 
   scale_color_icae(palette = "mixed") +
   scale_fill_icae(palette = "mixed")
 
 ineq_dynamics_post
 
 
-ineq_dynamics_pre <- ggplot(macro_data_agg, 
-                             aes(x=year,
-                                 y=gini_pre_tax_fn1,
-                                 color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = gini_pre_tax_fn1 - 0.5*gini_pre_tax_fn2, 
-        ymax = gini_pre_tax_fn1 + 0.5*gini_pre_tax_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-  ) +
-  geom_line() + 
-  geom_point() + 
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
-
-ineq_dynamics_pre <- pretty_up_ggplot(ineq_dynamics_pre) +
-  ggtitle("Income inequality (Gini pre tax)") + 
-  scale_y_continuous(
-    labels = scales::percent_format(accuracy = 1, scale = 1)
-  ) +
-  theme(
-    axis.title = element_blank()
-  ) + 
-  scale_x_continuous(
-    limits = c(1994, 2017),
-    breaks = seq(1994, 2016, 2), 
-    expand = c(0, 0)) + 
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
-
-ineq_dynamics_pre
-
-
-
-full_ineq_dynamics_plot_pre <- ggpubr::ggarrange(
-  ineq_plot_overall, ineq_dynamics_pre, 
-  ncol = 2, legend = "bottom", common.legend = TRUE
-)
-
-ggsave(filename = "output/fig_6n_inquality-changes-pre.pdf",
-       plot = full_ineq_dynamics_plot_pre, 
-       height = fig_height, width = 1.2*fig_width)
-
-
-
 full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
   ineq_plot_overall, ineq_dynamics_post, 
-  ncol = 2, legend = "bottom", common.legend = TRUE
-)
+  ncol = 2, legend = "bottom", common.legend = TRUE, 
+  labels = c("A)", "B)"), 
+  font.label = list(face="bold")
+  )
 
-ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
+ggsave(filename = "output/fig_6_inquality-dynamics.pdf",
        plot = full_ineq_dynamics_plot_post, 
        height = fig_height, width = 1.2*fig_width)
