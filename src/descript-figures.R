@@ -14,12 +14,12 @@ icae_public_colors <- c(
   )
 
 cluster_cols <- list(
-  "High tech" = icae_public_colors["dark blue"],
-  "Periphery" = icae_public_colors["purple"],
-  "UK" = icae_public_colors["dark red"],
-  "Catchup" = icae_public_colors["dark green"],
-  "Primary goods" = icae_public_colors["sand"],
-  "Finance" = icae_public_colors["orange"]
+  "High tech" = unname(icae_public_colors["dark blue"]),
+  "Periphery" = unname(icae_public_colors["purple"]),
+  "UK" = unname(icae_public_colors["dark red"]),
+  "Catchup" = unname(icae_public_colors["dark green"]),
+  "Primary goods" = unname(icae_public_colors["sand"]),
+  "Finance" = unname(icae_public_colors["orange"])
 )
 
 # Set up dataset===============================================================
@@ -152,6 +152,29 @@ macro_data_agg <- macro_data %>%
   summarise_all(.funs = c(mean, sd), na.rm=T) %>%
   ungroup()
 
+# Add cumulative data----------------------------------------------------------
+# Er meint mit cumulative einfach die Summe von 1994-2016
+macro_data_cumulated <- macro_data %>%
+  select(iso3c, year, current_account_GDP_ameco, 
+         gdp_real_pc_ppp, unemp_rate) %>%
+  filter(year>1993, year<2018) %>%
+  group_by(iso3c) %>%
+  mutate(
+    gdp_real_pc_ppp_growth=(gdp_real_pc_ppp-lag(gdp_real_pc_ppp))/lag(gdp_real_pc_ppp)
+    )%>%
+  summarise(CA_cum=mean(current_account_GDP_ameco, na.rm = T),
+            GDPpc_cum=mean(gdp_real_pc_ppp, na.rm = T),
+            GDPpc_growth_cum=mean(gdp_real_pc_ppp_growth, na.rm = T),
+            unemp_rates=mean(unemp_rate, na.rm = T)) %>%
+  ungroup() 
+macro_data_cumulated$cluster <- NA
+
+for (cl in names(clustering)){
+  macro_data_cumulated <- macro_data_cumulated %>%
+    mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
+}
+macro_data_cumulated <- arrange(macro_data_cumulated, cluster) %>%
+  mutate(cluster=factor(cluster, levels=unique(macro_data_cumulated$cluster), ordered = T)) 
 
 # Create figures===============================================================
 
@@ -169,7 +192,7 @@ pretty_up_ggplot <- function(old_plot,
           axis.line = element_line(),
           legend.position = "bottom",
           legend.title = element_blank(),
-          legend.spacing.x = unit(0.25, "cm")
+          legend.spacing.x = unit(0.2, "cm")
     )
   if (type_x_axis=="continuous"){
     new_plot <- new_plot +    
@@ -181,10 +204,9 @@ pretty_up_ggplot <- function(old_plot,
 fig_width <- 9
 fig_height <- 6
 
+# Figure 5: Current account----------------------------------------------------
 
-# Figure 3: Current account----------------------------------------------------
-
-fig_current_account <- ggplot(macro_data_agg, 
+fig_current_account_abs <- ggplot(macro_data_agg, 
                            aes(x=year,
                                y=current_account_GDP_ameco_fn1,
                                color=cluster)
@@ -196,14 +218,18 @@ fig_current_account <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+  geom_point()
 
-fig_current_account <- pretty_up_ggplot(fig_current_account) +
-  ggtitle("Current Account") + 
+fig_current_account_abs <- pretty_up_ggplot(fig_current_account_abs) +
+  ggtitle("Current Account in % of GDP (1995-2017)") + 
   scale_y_continuous(
+    limits = c(-20, 11),
+    breaks = seq(-20, 10, 5),
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
   scale_x_continuous(limits = c(1995, 2017), 
                      breaks = seq(1995, 2015, 5),
                      expand = expand_scale(c(0, 0), 
@@ -214,87 +240,60 @@ fig_current_account <- pretty_up_ggplot(fig_current_account) +
     axis.title = element_blank()
   )
 
-fig_current_account
+fig_current_account_abs
 
-ggsave(filename = "output/fig_3_current-account.pdf", 
-       width = fig_width, height = fig_height)
-
-# Figure 3: Current Account (cumulative change)--------------------------------
-fig_current_account_cgrowth <- ggplot(macro_data_agg, 
-                              aes(x=year,
-                                  y=current_account_GDP_ameco_cgrowth_fn1,
-                                  color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = current_account_GDP_ameco_cgrowth_fn1 - 0.5*current_account_GDP_ameco_cgrowth_fn2, 
-        ymax = current_account_GDP_ameco_cgrowth_fn1 + 0.5*current_account_GDP_ameco_cgrowth_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
+fig_current_account_cum <- ggplot(macro_data_cumulated) + 
+  geom_bar(aes(x=reorder(iso3c, CA_cum), 
+               y=CA_cum, 
+               fill=cluster, color=cluster), 
+           stat = "identity") +
+  ggtitle("Average Current Account in % of GDP (1995-2017)") + 
+  ylab("Average current account") +  
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Periphery"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Primary goods"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["UK"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Catchup"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["High tech"]]), CA_cum)$iso3c,
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Finance"]]), CA_cum)$iso3c)
   ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_current_account_cgrowth <- pretty_up_ggplot(fig_current_account_cgrowth) +
-  ggtitle("Current Account (compound average growth rate)") + 
   scale_y_continuous(
-    labels = scales::percent_format(scale = 1)
+    limits = c(-6.5, 7),
+    breaks = seq(-6, 6, 2),
+    labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
-  scale_x_continuous(limits = c(1995, 2017), 
-                     breaks = seq(1995, 2015, 5),
-                     expand = expand_scale(c(0, 0), 
-                                           c(0, 0.25)
-                                           )
-                     ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme_bw() +
   theme(
-    axis.title = element_blank()
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title.x = element_blank(), 
+    axis.text.x = element_text(size = 7),
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.2, "cm")
   )
+fig_current_account_cum
 
-fig_current_account_cgrowth
-
-ggsave(filename = "output/fig_3_current-account-cumul-growth.pdf", 
-       width = fig_width, height = fig_height)
-
-# Figure 3: Current Account (1995=100)--------------------------------
-fig_current_account_base95 <- ggplot(macro_data_agg, 
-                                      aes(x=year,
-                                          y=current_account_GDP_ameco_base95_fn1,
-                                          color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = current_account_GDP_ameco_base95_fn1 - 0.5*current_account_GDP_ameco_base95_fn2,
-        ymax = current_account_GDP_ameco_base95_fn1 + 0.5*current_account_GDP_ameco_base95_fn2,
-        fill=cluster),
-    alpha=0.5, color=NA
-  ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_current_account_base95 <- pretty_up_ggplot(fig_current_account_base95) +
-  ggtitle("Current Account (1995=100)") + 
-  scale_y_continuous(breaks = seq(0, 160, 20)) +
-  scale_x_continuous(limits = c(1995, 2017), 
-                     breaks = seq(1995, 2015, 5),
-                     expand = expand_scale(c(0, 0), 
-                                           c(0, 0.25)
-                     )
-  ) +
-  theme(
-    axis.title = element_blank()
-  )
-
-fig_current_account_base95
-
-ggsave(filename = "output/fig_3_current-account-base1995.pdf", 
-       width = fig_width, height = fig_height)
-
-current_account_figures <- ggpubr::ggarrange(
-  fig_current_account, fig_current_account_cgrowth, fig_current_account_base95, ncol = 1, nrow = 3
+fig_current_account_full <- ggpubr::ggarrange(
+  fig_current_account_abs, fig_current_account_cum, 
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
+  labels = c("A)", "B)"), font.label = list(face="bold")
 )
-ggsave(plot = current_account_figures, filename = "output/CA-figs.pdf", height = fig_height*2.5, width = fig_width)
 
-# Figure 4: Cumulative GDP per capita growth-----------------------------------
+ggsave(filename = "output/fig_5_current-account.pdf", 
+       width = fig_width*1.5, height = fig_height)
+
+# Figure 3: Cumulative GDP per capita growth-----------------------------------
 fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
                              aes(x=year,
                                  y=gdp_real_pc_ppp_fn1,
@@ -357,7 +356,7 @@ fig_gdp_pc_cgrowth <- pretty_up_ggplot(fig_gdp_pc_cgrowth) +
 
 fig_gdp_pc_cgrowth
 
-ggsave(filename = "output/fig_4_gdp-pc-cumul-growth.pdf", 
+ggsave(filename = "output/fig_3_gdp-pc-cumul-growth.pdf", 
        width = fig_width, height = fig_height)
 
 
@@ -396,7 +395,7 @@ ggsave(plot = gdp_rel_ch_plot,
        filename = "output/fig_4_gdp-pc-full.pdf",
        width = fig_width*2, height = fig_height)
 
-# Figure 5: Unemployment rate, 1994 - 2016-------------------------------------
+# Figure 4: Unemployment rate, 1994 - 2016-------------------------------------
 
 fig_unemployment <- ggplot(macro_data_agg, 
                            aes(x=year,
@@ -715,32 +714,12 @@ ft_plots_full <- ggpubr::ggarrange(plotlist = ft_plots, ncol = 3, nrow = 2, lege
 ggsave(plot = ft_plots_full, filename = "output/foreign-trade-figs-noLux.pdf", width = fig_width*1.75, height = fig_height*1.5)
 
 
-# Cumulated CA
-# Er meint mit cumulative einfach die Summe von 1994-2016
-ca_cum <- macro_data %>%
-  select(iso3c, year, current_account_GDP_ameco, gdp_real_pc_ppp, unemp_rate) %>%
-  filter(year>1993, year<2018) %>%
-  group_by(iso3c) %>%
-  mutate(gdp_real_pc_ppp_growth=(gdp_real_pc_ppp-lag(gdp_real_pc_ppp))/lag(gdp_real_pc_ppp))%>%
-  summarise(CA_cum=mean(current_account_GDP_ameco, na.rm = T),
-            GDPpc_cum=mean(gdp_real_pc_ppp, na.rm = T),
-            GDPpc_growth_cum=mean(gdp_real_pc_ppp_growth, na.rm = T),
-            unemp_rates=mean(unemp_rate, na.rm = T)) %>%
-  ungroup() 
-ca_cum$cluster <- NA
-
-for (cl in names(clustering)){
-  ca_cum <- ca_cum %>%
-    mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
-}
-ca_cum <- arrange(ca_cum, cluster) %>%
-  mutate(cluster=factor(cluster, levels=unique(ca_cum$cluster), ordered = T)) 
 
 
-ca_cum_plot <- ggplot(ca_cum) + 
+ca_cum_plot <- ggplot(macro_data_cumulated) + 
   geom_bar(aes(x=reorder(iso3c, CA_cum), y=CA_cum, fill=cluster, color=cluster), stat = "identity") +
-  scale_fill_icae(palette="mixed") + scale_color_icae(palette="mixed") +
-  ggtitle("The mean current account") + 
+  ggtitle("Mean current account") + 
+  scale_y_continuous() + ylab("Average current account") +  
   scale_x_discrete(
     limits=c(
       arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), CA_cum)$iso3c,
@@ -750,12 +729,9 @@ ca_cum_plot <- ggplot(ca_cum) +
       arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), CA_cum)$iso3c,
       arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), CA_cum)$iso3c)
     ) +
-  scale_fill_manual(values=c(icae_public_colors[["dark blue"]], 
-                             icae_public_colors[["purple"]], 
-                             icae_public_colors[["dark blue"]],
-                             icae_public_colors[["dark blue"]], 
-                             icae_public_colors[["dark blue"]], 
-                             icae_public_colors[["dark blue"]])) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
   theme_bw() +
   theme(
     panel.border = element_blank(),
