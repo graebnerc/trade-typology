@@ -295,9 +295,9 @@ ggsave(plot = gdp_pc_full,
        width = fig_width*1.5, height = fig_height)
 
 
-# Figure 4: Unemployment rate, 1994 - 2016-------------------------------------
+# Figure 4: Unemployment rate, 1994 - 2018-------------------------------------
 
-fig_unemployment <- ggplot(macro_data_agg, 
+unemp_rate <- ggplot(macro_data_agg, 
                            aes(x=year,
                                y=unemp_rate_fn1,
                                color=cluster)
@@ -309,22 +309,37 @@ fig_unemployment <- ggplot(macro_data_agg,
     alpha=0.5, color=NA
   ) +
   geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+  geom_point() 
 
-fig_unemployment <- pretty_up_ggplot(fig_unemployment) +
-  ggtitle("Unemployment rate") + 
+unemp_rate <- pretty_up_ggplot(unemp_rate) +
+  ggtitle("Unemployment rate (1995-2018)") + 
   scale_y_continuous(
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
+  scale_x_continuous(limits = c(1995, 2018), 
+                     breaks = seq(1995, 2015, 5),
+                     expand = expand_scale(c(0, 0), 
+                                           c(0, 0.25))
+                     ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
   theme(
     axis.title = element_blank()
   )
+unemp_rate
 
-fig_unemployment
 
-ggsave(filename = "output/fig_4_unemployment.pdf", 
-       width = fig_width, height = fig_height)
+
+
+unemp_full <- ggpubr::ggarrange(
+  unemp_rate, unemp_cum, 
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
+  labels = c("A)", "B)"), font.label = list(face="bold")
+)
+ggsave(plot = unemp_full,
+       filename = "output/fig_3_unemployment.pdf", 
+       width = fig_width*1.5, height = fig_height)
 
 # Figure 5: Current account----------------------------------------------------
 
