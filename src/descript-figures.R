@@ -281,7 +281,7 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
   theme(
     panel.border = element_blank(),
     axis.line = element_line(),
-    axis.title.x = element_blank(), 
+    axis.title = element_blank(), 
     axis.text.x = element_text(size = 7),
     legend.position = "bottom", 
     legend.title = element_blank(), 
@@ -344,13 +344,13 @@ unemp_cum <- ggplot(macro_data_cumulated) +
     limits=c(
       arrange(
         filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Catchup"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
                iso3c %in% clustering[["UK"]]), unemp_rate_cum)$iso3c,
       arrange(
         filter(macro_data_cumulated, 
                iso3c %in% clustering[["High tech"]]), unemp_rate_cum)$iso3c,
-      arrange(
-        filter(macro_data_cumulated, 
-               iso3c %in% clustering[["Catchup"]]), unemp_rate_cum)$iso3c,
       arrange(
         filter(macro_data_cumulated, 
                iso3c %in% clustering[["Primary goods"]]), unemp_rate_cum)$iso3c,
@@ -374,9 +374,10 @@ unemp_cum <- ggplot(macro_data_cumulated) +
     panel.border = element_blank(),
     axis.line = element_line(),
     axis.title = element_blank(), 
+    axis.text.x = element_text(size = 7),
     legend.position = "bottom", 
     legend.title = element_blank(), 
-    legend.spacing.x = unit(0.25, "cm")
+    legend.spacing.x = unit(0.2, "cm")
   )
 unemp_cum
 
@@ -462,7 +463,7 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
   theme(
     panel.border = element_blank(),
     axis.line = element_line(),
-    axis.title.x = element_blank(), 
+    axis.title = element_blank(), 
     axis.text.x = element_text(size = 7),
     legend.position = "bottom", 
     legend.title = element_blank(), 
@@ -478,7 +479,6 @@ fig_current_account_full <- ggpubr::ggarrange(
 
 ggsave(filename = "output/fig_5_current-account.pdf", 
        width = fig_width*1.5, height = fig_height)
-
 
 
 # Figure 6: Inequality comparison----------------------------------------------
@@ -817,7 +817,7 @@ growth_cum_plot <- ggplot(ca_cum) +
   theme(
     panel.border = element_blank(),
     axis.line = element_line(),
-    axis.title.x = element_blank(), 
+    axis.title = element_blank(), 
     legend.position = "bottom", 
     legend.title = element_blank(), 
     legend.spacing.x = unit(0.25, "cm")
@@ -843,7 +843,7 @@ unemp_cum_plot <- ggplot(ca_cum) +
   theme(
     panel.border = element_blank(),
     axis.line = element_line(),
-    axis.title.x = element_blank(), 
+    axis.title = element_blank(), 
     legend.position = "bottom", 
     legend.title = element_blank(), 
     legend.spacing.x = unit(0.25, "cm")
