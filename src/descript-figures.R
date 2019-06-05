@@ -4,6 +4,24 @@ library(tidyverse)
 library(data.table)
 library(icaeDesign)
 
+icae_public_colors <- c(
+  `orange` = "#ff9900",
+  `purple` = "#8600b3",
+  `dark green` = "#006600",
+  `sand` = "#d8c469",
+  `dark blue` = "#002b80",
+  `dark red` = "#800000"
+  )
+
+cluster_cols <- list(
+  "High tech" = icae_public_colors["dark blue"],
+  "Periphery" = icae_public_colors["purple"],
+  "UK" = icae_public_colors["dark red"],
+  "Catchup" = icae_public_colors["dark green"],
+  "Primary goods" = icae_public_colors["sand"],
+  "Finance" = icae_public_colors["orange"]
+)
+
 # Set up dataset===============================================================
 set_up_macro_data <- TRUE # Extracts data from package MacroDataR
 macro_data_file_name <- "data/descriptive_data.csv"
@@ -21,7 +39,8 @@ if (set_up_macro_data){
     dplyr::select(dplyr::one_of("iso3c", "year", "current_account_GDP_ameco",
                                 "unemp_rate", 
                                 "gdp_real_ppp", "gdp_real_pc_ppp",
-                                "gini_post_tax", "gini_pre_tax", "wage_share")
+                                "gini_post_tax", "gini_pre_tax", "wage_share",
+                                "kof_trade_df",  "kof_fin_df", "trade_total_GDP", "trade_exp_GDP", "trade_imp_GDP")
     ) %>%
     dplyr::filter(iso3c %in% countries_considered, 
                   year>1993)
@@ -640,4 +659,165 @@ full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
 ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
        plot = full_ineq_dynamics_plot_post, 
        height = fig_height, width = 1.2*fig_width)
+
+# Further ideas for foreign trade component of figure 5:-----------------------
+# net foreign wealth: raussuchen
+
+# KOF trade de facto
+# 
+# kof_fin_df
+# trade_total_GDP
+# trade_exp_GDP
+# trade_imp_GDP
+foreign_trade_vars <- c(
+  "KOF Trade de facto"="kof_trade_df",  
+  "KOF Finance de facto"="kof_fin_df", 
+  "Trade to GDP"="trade_total_GDP", 
+  "Exports to GDP"="trade_exp_GDP", 
+  "Imports to GDP"="trade_imp_GDP"
+  )
+make_ft_plot <- function(var_name, data_used){
+  var_name_mean <- paste0(var_name, "_fn1")
+  var_name_sd <- paste0(var_name, "_fn2")
+  ft_plot <- ggplot(data_used, 
+                             aes(x=year,
+                                 y=UQ(as.name(var_name_mean)),
+                                 color=cluster)
+  ) + 
+    geom_ribbon(
+      aes(ymin = UQ(as.name(var_name_mean)) - 0.5*UQ(as.name(var_name_sd)), 
+          ymax = UQ(as.name(var_name_mean)) + 0.5*UQ(as.name(var_name_sd)),
+          fill=cluster), 
+      alpha=0.5, color=NA
+    ) +
+    geom_line() + 
+    geom_point() + 
+    scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed") +
+    ggtitle(names(var_name)) +
+    theme_bw() + theme(legend.position = "bottom", panel.border = element_blank(), axis.line = element_line())
+  return(ft_plot)
+}
+ft_plots <- list()
+for (va in 1:length(foreign_trade_vars)){
+  print(names(foreign_trade_vars)[va])
+  ft_plots[[names(foreign_trade_vars)[va]]] <- make_ft_plot(foreign_trade_vars[[va]], macro_data_agg)
+}
+ft_plots_full <- ggpubr::ggarrange(plotlist = ft_plots, ncol = 3, nrow = 2, legend = "bottom", common.legend = T, labels = "AUTO")
+ggsave(plot = ft_plots_full, filename = "output/foreign-trade-figs.pdf", width = fig_width*1.75, height = fig_height*1.5)
+
+# Without LUX
+ft_plots <- list()
+for (va in 1:length(foreign_trade_vars)){
+  print(names(foreign_trade_vars)[va])
+  ft_plots[[names(foreign_trade_vars)[va]]] <- make_ft_plot(foreign_trade_vars[[va]], filter(macro_data_agg, cluster != "Finance"))
+}
+ft_plots_full <- ggpubr::ggarrange(plotlist = ft_plots, ncol = 3, nrow = 2, legend = "bottom", common.legend = T, labels = "AUTO")
+ggsave(plot = ft_plots_full, filename = "output/foreign-trade-figs-noLux.pdf", width = fig_width*1.75, height = fig_height*1.5)
+
+
+# Cumulated CA
+# Er meint mit cumulative einfach die Summe von 1994-2016
+ca_cum <- macro_data %>%
+  select(iso3c, year, current_account_GDP_ameco, gdp_real_pc_ppp, unemp_rate) %>%
+  filter(year>1993, year<2018) %>%
+  group_by(iso3c) %>%
+  mutate(gdp_real_pc_ppp_growth=(gdp_real_pc_ppp-lag(gdp_real_pc_ppp))/lag(gdp_real_pc_ppp))%>%
+  summarise(CA_cum=mean(current_account_GDP_ameco, na.rm = T),
+            GDPpc_cum=mean(gdp_real_pc_ppp, na.rm = T),
+            GDPpc_growth_cum=mean(gdp_real_pc_ppp_growth, na.rm = T),
+            unemp_rates=mean(unemp_rate, na.rm = T)) %>%
+  ungroup() 
+ca_cum$cluster <- NA
+
+for (cl in names(clustering)){
+  ca_cum <- ca_cum %>%
+    mutate(cluster=ifelse(iso3c %in% clustering[[cl]], cl, cluster))
+}
+ca_cum <- arrange(ca_cum, cluster) %>%
+  mutate(cluster=factor(cluster, levels=unique(ca_cum$cluster), ordered = T)) 
+
+
+ca_cum_plot <- ggplot(ca_cum) + 
+  geom_bar(aes(x=reorder(iso3c, CA_cum), y=CA_cum, fill=cluster, color=cluster), stat = "identity") +
+  scale_fill_icae(palette="mixed") + scale_color_icae(palette="mixed") +
+  ggtitle("The mean current account") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), CA_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Primary goods"]]), CA_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Catchup"]]), CA_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["UK"]]), CA_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), CA_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), CA_cum)$iso3c)
+    ) +
+  scale_fill_manual(values=c(icae_public_colors[["dark blue"]], 
+                             icae_public_colors[["purple"]], 
+                             icae_public_colors[["dark blue"]],
+                             icae_public_colors[["dark blue"]], 
+                             icae_public_colors[["dark blue"]], 
+                             icae_public_colors[["dark blue"]])) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title.x = element_blank(), 
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.25, "cm")
+    )
+ca_cum_plot
+ggsave("output/cumCA.pdf", 
+       height = 6, width = 9)
+
+growth_cum_plot <- ggplot(ca_cum) + 
+  geom_bar(aes(x=reorder(iso3c, GDPpc_growth_cum), y=GDPpc_growth_cum, fill=cluster, color=cluster), stat = "identity") +
+  scale_fill_icae(palette="mixed") + scale_color_icae(palette="mixed") +
+  ggtitle("Mean GDP per capita growth") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), GDPpc_growth_cum)$iso3c,
+    arrange(filter(ca_cum, iso3c %in% clustering[["UK"]]), GDPpc_growth_cum)$iso3c,
+    arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Catchup"]]), GDPpc_growth_cum)$iso3c,
+    arrange(filter(ca_cum, iso3c %in% clustering[["Primary goods"]]), GDPpc_growth_cum)$iso3c)
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title.x = element_blank(), 
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.25, "cm")
+  )
+growth_cum_plot
+ggsave("output/cumGrowth.pdf", 
+       height = 6, width = 9)
+
+unemp_cum_plot <- ggplot(ca_cum) + 
+  geom_bar(aes(x=reorder(iso3c, unemp_rates), y=unemp_rates, fill=cluster, color=cluster), stat = "identity") +
+  scale_fill_icae(palette="mixed") + scale_color_icae(palette="mixed") +
+  ggtitle("Mean unemployment rate") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["UK"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Catchup"]]), GDPpc_growth_cum)$iso3c,
+      arrange(filter(ca_cum, iso3c %in% clustering[["Primary goods"]]), GDPpc_growth_cum)$iso3c)
+  ) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title.x = element_blank(), 
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.25, "cm")
+  )
+unemp_cum_plot
+ggsave("output/cumUnempl.pdf", 
+       height = 6, width = 9)
 
