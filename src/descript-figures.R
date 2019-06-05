@@ -265,7 +265,7 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
                      iso3c %in% clustering[["Finance"]]), CA_cum)$iso3c)
   ) +
   scale_y_continuous(
-    limits = c(-6.5, 7),
+    limits = c(-7.1, 7),
     breaks = seq(-6, 6, 2),
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
@@ -293,7 +293,7 @@ fig_current_account_full <- ggpubr::ggarrange(
 ggsave(filename = "output/fig_5_current-account.pdf", 
        width = fig_width*1.5, height = fig_height)
 
-# Figure 3: Cumulative GDP per capita growth-----------------------------------
+# Figure 3: GDP per capita-----------------------------------------------------
 fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
                              aes(x=year,
                                  y=gdp_real_pc_ppp_fn1,
