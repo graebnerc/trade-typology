@@ -160,12 +160,16 @@ macro_data_cumulated <- macro_data %>%
   filter(year>1993, year<2018) %>%
   group_by(iso3c) %>%
   mutate(
-    gdp_real_pc_ppp_growth=(gdp_real_pc_ppp-lag(gdp_real_pc_ppp))/lag(gdp_real_pc_ppp)
-    )%>%
+    gdp_real_pc_ppp_growth=(gdp_real_pc_ppp-lag(gdp_real_pc_ppp))/lag(gdp_real_pc_ppp),
+    unemp_rate_change=(unemp_rate-lag(unemp_rate))/lag(unemp_rate)
+    ) %>%
   summarise(CA_cum=mean(current_account_GDP_ameco, na.rm = T),
             GDPpc_cum=mean(gdp_real_pc_ppp, na.rm = T),
             GDPpc_growth_cum=mean(gdp_real_pc_ppp_growth, na.rm = T),
-            unemp_rates=mean(unemp_rate, na.rm = T)) %>%
+            unemp_rates=mean(unemp_rate, na.rm = T),
+            unemp_rate_cum=mean(unemp_rate_change, na.rm = T),
+            unemp_rate_sum=sum(unemp_rate_change, na.rm = T)
+            ) %>%
   ungroup() 
 macro_data_cumulated$cluster <- NA
 
@@ -330,6 +334,51 @@ unemp_rate <- pretty_up_ggplot(unemp_rate) +
 unemp_rate
 
 
+unemp_cum <- ggplot(macro_data_cumulated) + 
+  geom_bar(aes(x=reorder(iso3c, unemp_rate_sum), 
+               y=unemp_rate_cum, 
+               fill=cluster, color=cluster), 
+           stat = "identity") +
+  ggtitle("Average change in the unemployment rate (1995-2017)") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["UK"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["High tech"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Catchup"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Primary goods"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Finance"]]), unemp_rate_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Periphery"]]), unemp_rate_cum)$iso3c
+    )
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 100, 
+                                                     accuracy = 1),
+                     breaks = seq(-0.03, 0.05, 0.01)
+  ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title = element_blank(), 
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.25, "cm")
+  )
+unemp_cum
 
 
 unemp_full <- ggpubr::ggarrange(
