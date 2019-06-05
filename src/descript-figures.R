@@ -239,7 +239,8 @@ fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
                     values=c(unlist(cluster_cols)), 
                     aesthetics = c("fill", "color")) +
   theme(
-    axis.title = element_blank()
+    axis.title = element_blank(),
+    axis.title.y = element_blank()
   )
 
 fig_gdp_pc
@@ -388,7 +389,7 @@ unemp_full <- ggpubr::ggarrange(
   labels = c("A)", "B)"), font.label = list(face="bold")
 )
 ggsave(plot = unemp_full,
-       filename = "output/fig_3_unemployment.pdf", 
+       filename = "output/fig_4_unemployment.pdf", 
        width = fig_width*1.5, height = fig_height)
 
 # Figure 5: Current account----------------------------------------------------
@@ -514,7 +515,7 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range){
       axis.title.y = element_blank()
     ) + 
     ggtitle(
-      paste0("Changes between ", time_period[1], " and ", time_period[2])
+      paste0("Inequality in ", time_period[1], " and ", time_period[2])
     ) + 
     scale_fill_icae(palette = "mixed") + 
     scale_color_icae(palette = "mixed")
@@ -597,32 +598,7 @@ ineq_plot_overall <- make_ineq_barplot(
   scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share")) 
 ineq_plot_overall 
 
-ineq_plot_early <- make_ineq_barplot(
-  filter(ineq_data_overall, 
-         get_last_char(variable, 5)=="early"), 
-  c(1994, 2007),
-  x_barplot_range) + 
-  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
-ineq_plot_early
 
-ineq_plot_late <- make_ineq_barplot(
-  filter(ineq_data_overall, 
-         get_last_char(variable, 4)=="late"), 
-  c(2008, 2016),
-  c(-4, 4)) + 
-  scale_x_discrete(labels=c("Gini (post)", "Gini (pre)", "Wage share"))
-ineq_plot_late
-
-full_ineq_plot <- ggpubr::ggarrange(
-  ineq_plot_overall, ineq_plot_early, ineq_plot_late, 
-  ncol = 3, legend = "bottom", common.legend = TRUE
-)
-
-ggsave(filename = "output/fig_6_inquality-changes.pdf",
-       plot = full_ineq_plot, 
-       height = fig_height, width = 2*fig_width)
-
-# new alternative--------------------------------------------------------------
 gini_x_range <- c(1994, 2016)
 ineq_dynamics_post <- ggplot(macro_data_agg, 
                              aes(x=year,
@@ -658,51 +634,6 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
 ineq_dynamics_post
 
 
-ineq_dynamics_pre <- ggplot(macro_data_agg, 
-                             aes(x=year,
-                                 y=gini_pre_tax_fn1,
-                                 color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = gini_pre_tax_fn1 - 0.5*gini_pre_tax_fn2, 
-        ymax = gini_pre_tax_fn1 + 0.5*gini_pre_tax_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-  ) +
-  geom_line() + 
-  geom_point() + 
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
-
-ineq_dynamics_pre <- pretty_up_ggplot(ineq_dynamics_pre) +
-  ggtitle("Income inequality (Gini pre tax)") + 
-  scale_y_continuous(
-    labels = scales::percent_format(accuracy = 1, scale = 1)
-  ) +
-  theme(
-    axis.title = element_blank()
-  ) + 
-  scale_x_continuous(
-    limits = gini_x_range,
-    breaks = seq(1994, 2016, 2), 
-    expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))) + 
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
-ineq_dynamics_pre
-
-
-
-full_ineq_dynamics_plot_pre <- ggpubr::ggarrange(
-  ineq_plot_overall, ineq_dynamics_pre, 
-  ncol = 2, legend = "bottom", common.legend = TRUE
-)
-
-ggsave(filename = "output/fig_6n_inquality-changes-pre.pdf",
-       plot = full_ineq_dynamics_plot_pre, 
-       height = fig_height, width = 1.2*fig_width)
-
-
-
 full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
   ineq_plot_overall, ineq_dynamics_post, 
   ncol = 2, legend = "bottom", common.legend = TRUE, 
@@ -710,145 +641,6 @@ full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
   font.label = list(face="bold")
   )
 
-ggsave(filename = "output/fig_6n_inquality-changes-post.pdf",
+ggsave(filename = "output/fig_6_inquality-dynamics.pdf",
        plot = full_ineq_dynamics_plot_post, 
        height = fig_height, width = 1.2*fig_width)
-
-# Further ideas for foreign trade component of figure 5:-----------------------
-# net foreign wealth: raussuchen
-
-# KOF trade de facto
-# 
-# kof_fin_df
-# trade_total_GDP
-# trade_exp_GDP
-# trade_imp_GDP
-foreign_trade_vars <- c(
-  "KOF Trade de facto"="kof_trade_df",  
-  "KOF Finance de facto"="kof_fin_df", 
-  "Trade to GDP"="trade_total_GDP", 
-  "Exports to GDP"="trade_exp_GDP", 
-  "Imports to GDP"="trade_imp_GDP"
-  )
-make_ft_plot <- function(var_name, data_used){
-  var_name_mean <- paste0(var_name, "_fn1")
-  var_name_sd <- paste0(var_name, "_fn2")
-  ft_plot <- ggplot(data_used, 
-                             aes(x=year,
-                                 y=UQ(as.name(var_name_mean)),
-                                 color=cluster)
-  ) + 
-    geom_ribbon(
-      aes(ymin = UQ(as.name(var_name_mean)) - 0.5*UQ(as.name(var_name_sd)), 
-          ymax = UQ(as.name(var_name_mean)) + 0.5*UQ(as.name(var_name_sd)),
-          fill=cluster), 
-      alpha=0.5, color=NA
-    ) +
-    geom_line() + 
-    geom_point() + 
-    scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed") +
-    ggtitle(names(var_name)) +
-    theme_bw() + theme(legend.position = "bottom", panel.border = element_blank(), axis.line = element_line())
-  return(ft_plot)
-}
-ft_plots <- list()
-for (va in 1:length(foreign_trade_vars)){
-  print(names(foreign_trade_vars)[va])
-  ft_plots[[names(foreign_trade_vars)[va]]] <- make_ft_plot(foreign_trade_vars[[va]], macro_data_agg)
-}
-ft_plots_full <- ggpubr::ggarrange(plotlist = ft_plots, ncol = 3, nrow = 2, legend = "bottom", common.legend = T, labels = "AUTO")
-ggsave(plot = ft_plots_full, filename = "output/foreign-trade-figs.pdf", width = fig_width*1.75, height = fig_height*1.5)
-
-# Without LUX
-ft_plots <- list()
-for (va in 1:length(foreign_trade_vars)){
-  print(names(foreign_trade_vars)[va])
-  ft_plots[[names(foreign_trade_vars)[va]]] <- make_ft_plot(foreign_trade_vars[[va]], filter(macro_data_agg, cluster != "Finance"))
-}
-ft_plots_full <- ggpubr::ggarrange(plotlist = ft_plots, ncol = 3, nrow = 2, legend = "bottom", common.legend = T, labels = "AUTO")
-ggsave(plot = ft_plots_full, filename = "output/foreign-trade-figs-noLux.pdf", width = fig_width*1.75, height = fig_height*1.5)
-
-
-
-
-ca_cum_plot <- ggplot(macro_data_cumulated) + 
-  geom_bar(aes(x=reorder(iso3c, CA_cum), y=CA_cum, fill=cluster, color=cluster), stat = "identity") +
-  ggtitle("Mean current account") + 
-  scale_y_continuous() + ylab("Average current account") +  
-  scale_x_discrete(
-    limits=c(
-      arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), CA_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Primary goods"]]), CA_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Catchup"]]), CA_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["UK"]]), CA_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), CA_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), CA_cum)$iso3c)
-    ) +
-  scale_fill_manual(limits = names(unlist(cluster_cols)), 
-                    values=c(unlist(cluster_cols)), 
-                    aesthetics = c("fill", "color")) +
-  theme_bw() +
-  theme(
-    panel.border = element_blank(),
-    axis.line = element_line(),
-    axis.title.x = element_blank(), 
-    legend.position = "bottom", 
-    legend.title = element_blank(), 
-    legend.spacing.x = unit(0.25, "cm")
-    )
-ca_cum_plot
-ggsave("output/cumCA.pdf", 
-       height = 6, width = 9)
-
-growth_cum_plot <- ggplot(ca_cum) + 
-  geom_bar(aes(x=reorder(iso3c, GDPpc_growth_cum), y=GDPpc_growth_cum, fill=cluster, color=cluster), stat = "identity") +
-  scale_fill_icae(palette="mixed") + scale_color_icae(palette="mixed") +
-  ggtitle("Mean GDP per capita growth") + 
-  scale_x_discrete(
-    limits=c(
-      arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), GDPpc_growth_cum)$iso3c,
-    arrange(filter(ca_cum, iso3c %in% clustering[["UK"]]), GDPpc_growth_cum)$iso3c,
-    arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Catchup"]]), GDPpc_growth_cum)$iso3c,
-    arrange(filter(ca_cum, iso3c %in% clustering[["Primary goods"]]), GDPpc_growth_cum)$iso3c)
-  ) +
-  theme_bw() +
-  theme(
-    panel.border = element_blank(),
-    axis.line = element_line(),
-    axis.title = element_blank(), 
-    legend.position = "bottom", 
-    legend.title = element_blank(), 
-    legend.spacing.x = unit(0.25, "cm")
-  )
-growth_cum_plot
-ggsave("output/cumGrowth.pdf", 
-       height = 6, width = 9)
-
-unemp_cum_plot <- ggplot(ca_cum) + 
-  geom_bar(aes(x=reorder(iso3c, unemp_rates), y=unemp_rates, fill=cluster, color=cluster), stat = "identity") +
-  scale_fill_icae(palette="mixed") + scale_color_icae(palette="mixed") +
-  ggtitle("Mean unemployment rate") + 
-  scale_x_discrete(
-    limits=c(
-      arrange(filter(ca_cum, iso3c %in% clustering[["Periphery"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Finance"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["UK"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["High tech"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Catchup"]]), GDPpc_growth_cum)$iso3c,
-      arrange(filter(ca_cum, iso3c %in% clustering[["Primary goods"]]), GDPpc_growth_cum)$iso3c)
-  ) +
-  theme_bw() +
-  theme(
-    panel.border = element_blank(),
-    axis.line = element_line(),
-    axis.title = element_blank(), 
-    legend.position = "bottom", 
-    legend.title = element_blank(), 
-    legend.spacing.x = unit(0.25, "cm")
-  )
-unemp_cum_plot
-ggsave("output/cumUnempl.pdf", 
-       height = 6, width = 9)
-
