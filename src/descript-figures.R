@@ -201,8 +201,130 @@ pretty_up_ggplot <- function(old_plot,
   return(new_plot)
 }
 
+ks <- function (x) { 
+  scales::number_format(accuracy = 1,
+                        scale = 1/1000,
+                        suffix = "k",
+                        big.mark = ".", 
+                        decimal.mark = ",")(x) 
+}
+
 fig_width <- 9
 fig_height <- 6
+
+# Figure 3: GDP per capita-----------------------------------------------------
+fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
+                     aes(x=year,
+                         y=gdp_real_pc_ppp_fn1,
+                         color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = gdp_real_pc_ppp_fn1 - 0.5*gdp_real_pc_ppp_fn2, 
+        ymax = gdp_real_pc_ppp_fn1 + 0.5*gdp_real_pc_ppp_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point()
+
+fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
+  ggtitle("Real GDP per capita") + 
+  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
+  scale_y_continuous(labels = ks) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_gdp_pc
+
+fig_gdp_cum_growth <- ggplot(macro_data_cumulated) + 
+  geom_bar(aes(x=reorder(iso3c, GDPpc_growth_cum), 
+               y=GDPpc_growth_cum, 
+               fill=cluster, color=cluster), 
+           stat = "identity") +
+  ggtitle("Mean GDP per capita growth (1995-2017)") + 
+  scale_x_discrete(
+    limits=c(
+      arrange(filter(macro_data_cumulated, 
+                     iso3c %in% clustering[["Periphery"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["UK"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Finance"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["High tech"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Catchup"]]), GDPpc_growth_cum)$iso3c,
+      arrange(
+        filter(macro_data_cumulated, 
+               iso3c %in% clustering[["Primary goods"]]), GDPpc_growth_cum)$iso3c
+    )
+  ) +
+  scale_y_continuous(labels = scales::percent_format(scale = 100, accuracy = 1), 
+                     expand = c(0, 0)
+  ) +
+  scale_fill_manual(limits = names(unlist(cluster_cols)), 
+                    values=c(unlist(cluster_cols)), 
+                    aesthetics = c("fill", "color")) +
+  theme_bw() +
+  theme(
+    panel.border = element_blank(),
+    axis.line = element_line(),
+    axis.title.x = element_blank(), 
+    axis.text.x = element_text(size = 7),
+    legend.position = "bottom", 
+    legend.title = element_blank(), 
+    legend.spacing.x = unit(0.2, "cm")
+  )
+fig_gdp_cum_growth
+
+gdp_pc_full <- ggpubr::ggarrange(
+  fig_gdp_pc, fig_gdp_cum_growth, 
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
+  labels = c("A)", "B)"), font.label = list(face="bold")
+)
+ggsave(plot = gdp_pc_full,
+       filename = "output/fig_3_gdp-growth.pdf", 
+       width = fig_width*1.5, height = fig_height)
+
+
+# Figure 4: Unemployment rate, 1994 - 2016-------------------------------------
+
+fig_unemployment <- ggplot(macro_data_agg, 
+                           aes(x=year,
+                               y=unemp_rate_fn1,
+                               color=cluster)
+) + 
+  geom_ribbon(
+    aes(ymin = unemp_rate_fn1 - 0.5*unemp_rate_fn2, 
+        ymax = unemp_rate_fn1 + 0.5*unemp_rate_fn2,
+        fill=cluster), 
+    alpha=0.5, color=NA
+  ) +
+  geom_line() + 
+  geom_point() + 
+  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
+
+fig_unemployment <- pretty_up_ggplot(fig_unemployment) +
+  ggtitle("Unemployment rate") + 
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1, scale = 1)
+  ) +
+  theme(
+    axis.title = element_blank()
+  )
+
+fig_unemployment
+
+ggsave(filename = "output/fig_4_unemployment.pdf", 
+       width = fig_width, height = fig_height)
 
 # Figure 5: Current account----------------------------------------------------
 
@@ -293,138 +415,7 @@ fig_current_account_full <- ggpubr::ggarrange(
 ggsave(filename = "output/fig_5_current-account.pdf", 
        width = fig_width*1.5, height = fig_height)
 
-# Figure 3: GDP per capita-----------------------------------------------------
-fig_gdp_pc <- ggplot(filter(macro_data_agg, year<2018), 
-                             aes(x=year,
-                                 y=gdp_real_pc_ppp_fn1,
-                                 color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = gdp_real_pc_ppp_fn1 - 0.5*gdp_real_pc_ppp_fn2, 
-        ymax = gdp_real_pc_ppp_fn1 + 0.5*gdp_real_pc_ppp_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-  ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
 
-ks <- function (x) { 
-  scales::number_format(accuracy = 1,
-                        scale = 1/1000,
-                        suffix = "k",
-                        big.mark = ".")(x) 
-}
-
-fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
-  ggtitle("Real GDP per capita") + 
-  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
-  scale_y_continuous(labels = ks) +
-  theme(
-    axis.title = element_blank()
-  )
-
-fig_gdp_pc
-
-ggsave(filename = "output/fig_4_gdp-pc.pdf", 
-       width = fig_width, height = fig_height)
-
-fig_gdp_pc_cgrowth <- ggplot(filter(macro_data_agg, year<2018), 
-                          aes(x=year,
-                              y=gdp_real_pc_ppp_cgrowth_fn1,
-                              color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = gdp_real_pc_ppp_cgrowth_fn1 - 0.5*gdp_real_pc_ppp_cgrowth_fn2, 
-        ymax = gdp_real_pc_ppp_cgrowth_fn1 + 0.5*gdp_real_pc_ppp_cgrowth_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-  ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_gdp_pc_cgrowth <- pretty_up_ggplot(fig_gdp_pc_cgrowth) +
-  ggtitle("Cumulative annual growth of real GDP per capita") + 
-  scale_y_continuous(
-    labels = scales::percent_format(scale = 100)
-  ) +
-  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
-  theme(
-    axis.title = element_blank()
-  )
-
-fig_gdp_pc_cgrowth
-
-ggsave(filename = "output/fig_3_gdp-pc-cumul-growth.pdf", 
-       width = fig_width, height = fig_height)
-
-
-fig_gdp_pc_base95 <- ggplot(filter(macro_data_agg, year<2018), 
-                             aes(x=year,
-                                 y=gdp_real_pc_ppp_base95_fn1,
-                                 color=cluster)
-) + 
-  geom_ribbon(
-    aes(ymin = gdp_real_pc_ppp_base95_fn1 - 0.5*gdp_real_pc_ppp_base95_fn2, 
-        ymax = gdp_real_pc_ppp_base95_fn1 + 0.5*gdp_real_pc_ppp_base95_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-  ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_gdp_pc_base95 <- pretty_up_ggplot(fig_gdp_pc_base95) +
-  ggtitle("Real GDP per capita (1995=100)") + 
-  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
-  theme(
-    axis.title = element_blank()
-  )
-
-fig_gdp_pc_base95
-
-ggsave(filename = "output/fig_4_gdp-pc-base95.pdf", 
-       width = fig_width, height = fig_height)
-
-gdp_rel_ch_plot <- ggpubr::ggarrange(
-  fig_gdp_pc_cgrowth, fig_gdp_pc_base95,fig_gdp_pc, 
-  ncol = 3, nrow = 1, legend = "bottom", 
-  common.legend = TRUE)
-ggsave(plot = gdp_rel_ch_plot, 
-       filename = "output/fig_4_gdp-pc-full.pdf",
-       width = fig_width*2, height = fig_height)
-
-# Figure 4: Unemployment rate, 1994 - 2016-------------------------------------
-
-fig_unemployment <- ggplot(macro_data_agg, 
-                           aes(x=year,
-                               y=unemp_rate_fn1,
-                               color=cluster)
-                           ) + 
-  geom_ribbon(
-    aes(ymin = unemp_rate_fn1 - 0.5*unemp_rate_fn2, 
-        ymax = unemp_rate_fn1 + 0.5*unemp_rate_fn2,
-        fill=cluster), 
-    alpha=0.5, color=NA
-    ) +
-  geom_line() + 
-  geom_point() + 
-  scale_fill_icae(palette = "mixed") + scale_color_icae(palette = "mixed")
-
-fig_unemployment <- pretty_up_ggplot(fig_unemployment) +
-  ggtitle("Unemployment rate") + 
-  scale_y_continuous(
-    labels = scales::percent_format(accuracy = 1, scale = 1)
-    ) +
-  theme(
-    axis.title = element_blank()
-    )
-
-fig_unemployment
-
-ggsave(filename = "output/fig_5_unemployment.pdf", 
-       width = fig_width, height = fig_height)
 
 # Figure 6: Inequality comparison----------------------------------------------
 
