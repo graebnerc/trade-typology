@@ -291,7 +291,7 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
 fig_gdp_cum_growth
 
 gdp_pc_full <- ggpubr::ggarrange(
-  fig_gdp_pc, fig_gdp_cum_growth, 
+  fig_gdp_cum_growth, fig_gdp_pc,
   ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
   labels = c("A)", "B)"), font.label = list(face="bold")
 )
@@ -384,7 +384,7 @@ unemp_cum
 
 
 unemp_full <- ggpubr::ggarrange(
-  unemp_rate, unemp_cum, 
+  unemp_cum, unemp_rate,
   ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
   labels = c("A)", "B)"), font.label = list(face="bold")
 )
@@ -473,7 +473,7 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
 fig_current_account_cum
 
 fig_current_account_full <- ggpubr::ggarrange(
-  fig_current_account_abs, fig_current_account_cum, 
+  fig_current_account_cum, fig_current_account_abs,
   ncol = 2, nrow = 1, common.legend = T, legend = "bottom", 
   labels = c("A)", "B)"), font.label = list(face="bold")
 )
