@@ -12,11 +12,16 @@ library(icaeDesign)
 source("src/clustering_functions.R")
 
 # Data preparation=============================================================
-source("src/clustering_data.R")
+if (prepare_data_from_scratch){
+  source("src/clustering_data.R")
+  
+  cluster_data <- cluster_data_R_v4
+  
+  fwrite(cluster_data, "data/clustering_data_used.csv")
+} else{
+  cluster_data <- fread("data/clustering_data_used.csv")
+}
 
-cluster_data <- cluster_data_R_v4
-
-fwrite(cluster_data, "data/clustering_data_used.csv")
 
 # Cluster implementation=======================================================
 
