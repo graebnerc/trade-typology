@@ -10,15 +10,15 @@ clustering <- list(
       c("Latvia", "Estonia"),
       "country.name", "iso3c"
     ),
-  "Catchup" = countrycode::countrycode(
+  "Industrial workbench" = countrycode::countrycode(
     c("Slovenia", "Poland", "Slovakia", "Hungary", "Czech Republic", "Czechia"),
     "country.name", "iso3c"
   ),
-  "UK" = countrycode::countrycode(
+  "Flexible labor markets" = countrycode::countrycode(
     c("United Kingdom"),
     "country.name", "iso3c"
   ),
-  "Finance" = countrycode::countrycode(
+  "Financel hub" = countrycode::countrycode(
     c("Luxembourg"),
     "country.name", "iso3c"
   ),
@@ -38,10 +38,10 @@ clustering <- list(
 cluster_cols <- list(
   "High tech" = unname(get_icae_colors("dark blue")),
   "Periphery" = unname(get_icae_colors("purple")),
-  "UK" = unname(get_icae_colors("dark red")),
-  "Catchup" = unname(get_icae_colors("dark green")),
+  "Flexible labor markets" = unname(get_icae_colors("dark red")),
+  "Industrial workbench" = unname(get_icae_colors("dark green")),
   "Primary goods" = unname(get_icae_colors("sand")),
-  "Finance" = unname(get_icae_colors("orange"))
+  "Financel hub" = unname(get_icae_colors("orange"))
 )
 
 # Set up dataset===============================================================
@@ -227,13 +227,13 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["UK"]]
+          iso3c %in% clustering[["Flexible labor markets"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Finance"]]
+          iso3c %in% clustering[["Financel hub"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
@@ -245,7 +245,7 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Catchup"]]
+          iso3c %in% clustering[["Industrial workbench"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
@@ -348,13 +348,13 @@ unemp_cum <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Catchup"]]
+          iso3c %in% clustering[["Industrial workbench"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["UK"]]
+          iso3c %in% clustering[["Flexible labor markets"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
@@ -372,7 +372,7 @@ unemp_cum <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Finance"]]
+          iso3c %in% clustering[["Financel hub"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
@@ -488,11 +488,11 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["UK"]]
+        iso3c %in% clustering[["Flexible labor markets"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Catchup"]]
+        iso3c %in% clustering[["Industrial workbench"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
@@ -500,7 +500,7 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Finance"]]
+        iso3c %in% clustering[["Financel hub"]]
       ), CA_cum)$iso3c
     )
   ) +
