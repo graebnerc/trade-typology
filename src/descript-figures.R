@@ -5,16 +5,16 @@ library(data.table)
 library(icaeDesign)
 
 clustering <- list(
-  "Primary goods" =
+  "Primary goods model" =
     countrycode::countrycode(
       c("Latvia", "Estonia"),
       "country.name", "iso3c"
     ),
-  "Industrial workbench" = countrycode::countrycode(
+  "Industrial workbench model" = countrycode::countrycode(
     c("Slovenia", "Poland", "Slovakia", "Hungary", "Czech Republic", "Czechia"),
     "country.name", "iso3c"
   ),
-  "Flexible labor markets" = countrycode::countrycode(
+  "Flexible labor markets model" = countrycode::countrycode(
     c("United Kingdom"),
     "country.name", "iso3c"
   ),
@@ -26,7 +26,7 @@ clustering <- list(
     c("Greece", "Portugal", "Spain", "Italy", "France"),
     "country.name", "iso3c"
   ),
-  "High tech" = countrycode::countrycode(
+  "High tech model" = countrycode::countrycode(
     c(
       "Sweden", "Finland", "Denmark", "Netherlands",
       "Belgium", "Germany", "Austria", "Ireland"
@@ -36,11 +36,11 @@ clustering <- list(
 )
 
 cluster_cols <- list(
-  "High tech" = unname(get_icae_colors("dark blue")),
+  "High tech model" = unname(get_icae_colors("dark blue")),
   "Periphery" = unname(get_icae_colors("purple")),
-  "Flexible labor markets" = unname(get_icae_colors("dark red")),
-  "Industrial workbench" = unname(get_icae_colors("dark green")),
-  "Primary goods" = unname(get_icae_colors("sand")),
+  "Flexible labor markets model" = unname(get_icae_colors("dark red")),
+  "Industrial workbench model" = unname(get_icae_colors("dark green")),
+  "Primary goods model" = unname(get_icae_colors("sand")),
   "Financel hub" = unname(get_icae_colors("orange"))
 )
 
@@ -227,7 +227,7 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Flexible labor markets"]]
+          iso3c %in% clustering[["Flexible labor markets model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
@@ -239,19 +239,19 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["High tech"]]
+          iso3c %in% clustering[["High tech model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Industrial workbench"]]
+          iso3c %in% clustering[["Industrial workbench model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Primary goods"]]
+          iso3c %in% clustering[["Primary goods model"]]
         ), GDPpc_growth_cum
       )$iso3c
     )
@@ -348,25 +348,25 @@ unemp_cum <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Industrial workbench"]]
+          iso3c %in% clustering[["Industrial workbench model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Flexible labor markets"]]
+          iso3c %in% clustering[["Flexible labor markets model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["High tech"]]
+          iso3c %in% clustering[["High tech model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Primary goods"]]
+          iso3c %in% clustering[["Primary goods model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
@@ -484,19 +484,19 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Primary goods"]]
+        iso3c %in% clustering[["Primary goods model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Flexible labor markets"]]
+        iso3c %in% clustering[["Flexible labor markets model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Industrial workbench"]]
+        iso3c %in% clustering[["Industrial workbench model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["High tech"]]
+        iso3c %in% clustering[["High tech model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
