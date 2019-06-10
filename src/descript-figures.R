@@ -577,8 +577,11 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range) {
     ggtitle(
       paste0("Inequality in ", time_period[1], " and ", time_period[2])
     ) +
-    scale_fill_icae(palette = "mixed") +
-    scale_color_icae(palette = "mixed")
+    scale_fill_manual(
+      limits = names(unlist(cluster_cols)),
+      values = c(unlist(cluster_cols)),
+      aesthetics = c("fill", "color")
+    )
 
   return(ineq_comparison_plot)
 }
@@ -681,9 +684,7 @@ ineq_dynamics_post <- ggplot(
     alpha = 0.5, color = NA
   ) +
   geom_line() +
-  geom_point() +
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
+  geom_point()
 
 ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
   ggtitle("Income inequality (Gini post tax)") +
@@ -698,8 +699,11 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
     breaks = seq(1994, 2016, 2),
     expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))
   ) +
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
+  scale_fill_manual(
+    limits = names(unlist(cluster_cols)),
+    values = c(unlist(cluster_cols)),
+    aesthetics = c("fill", "color")
+  )
 
 ineq_dynamics_post
 
