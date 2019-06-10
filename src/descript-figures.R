@@ -4,30 +4,21 @@ library(tidyverse)
 library(data.table)
 library(icaeDesign)
 
-icae_public_colors <- c(
-  `orange` = "#ff9900",
-  `purple` = "#8600b3",
-  `dark green` = "#006600",
-  `sand` = "#d8c469",
-  `dark blue` = "#002b80",
-  `dark red` = "#800000"
-)
-
 clustering <- list(
-  "Primary goods" =
+  "Primary goods model" =
     countrycode::countrycode(
       c("Latvia", "Estonia"),
       "country.name", "iso3c"
     ),
-  "Catchup" = countrycode::countrycode(
+  "Industrial workbench model" = countrycode::countrycode(
     c("Slovenia", "Poland", "Slovakia", "Hungary", "Czech Republic", "Czechia"),
     "country.name", "iso3c"
   ),
-  "UK" = countrycode::countrycode(
+  "Flexible labor markets model" = countrycode::countrycode(
     c("United Kingdom"),
     "country.name", "iso3c"
   ),
-  "Finance" = countrycode::countrycode(
+  "Financel hub" = countrycode::countrycode(
     c("Luxembourg"),
     "country.name", "iso3c"
   ),
@@ -35,7 +26,7 @@ clustering <- list(
     c("Greece", "Portugal", "Spain", "Italy", "France"),
     "country.name", "iso3c"
   ),
-  "High tech" = countrycode::countrycode(
+  "High tech model" = countrycode::countrycode(
     c(
       "Sweden", "Finland", "Denmark", "Netherlands",
       "Belgium", "Germany", "Austria", "Ireland"
@@ -45,12 +36,12 @@ clustering <- list(
 )
 
 cluster_cols <- list(
-  "High tech" = unname(icae_public_colors["dark blue"]),
-  "Periphery" = unname(icae_public_colors["purple"]),
-  "UK" = unname(icae_public_colors["dark red"]),
-  "Catchup" = unname(icae_public_colors["dark green"]),
-  "Primary goods" = unname(icae_public_colors["sand"]),
-  "Finance" = unname(icae_public_colors["orange"])
+  "High tech model" = unname(get_icae_colors("dark blue")),
+  "Periphery" = unname(get_icae_colors("purple")),
+  "Flexible labor markets model" = unname(get_icae_colors("dark red")),
+  "Industrial workbench model" = unname(get_icae_colors("dark green")),
+  "Primary goods model" = unname(get_icae_colors("sand")),
+  "Financel hub" = unname(get_icae_colors("orange"))
 )
 
 # Set up dataset===============================================================
@@ -236,31 +227,31 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["UK"]]
+          iso3c %in% clustering[["Flexible labor markets model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Finance"]]
+          iso3c %in% clustering[["Financel hub"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["High tech"]]
+          iso3c %in% clustering[["High tech model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Catchup"]]
+          iso3c %in% clustering[["Industrial workbench model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Primary goods"]]
+          iso3c %in% clustering[["Primary goods model"]]
         ), GDPpc_growth_cum
       )$iso3c
     )
@@ -357,31 +348,31 @@ unemp_cum <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Catchup"]]
+          iso3c %in% clustering[["Industrial workbench model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["UK"]]
+          iso3c %in% clustering[["Flexible labor markets model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["High tech"]]
+          iso3c %in% clustering[["High tech model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Primary goods"]]
+          iso3c %in% clustering[["Primary goods model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Finance"]]
+          iso3c %in% clustering[["Financel hub"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
@@ -493,23 +484,23 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Primary goods"]]
+        iso3c %in% clustering[["Primary goods model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["UK"]]
+        iso3c %in% clustering[["Flexible labor markets model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Catchup"]]
+        iso3c %in% clustering[["Industrial workbench model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["High tech"]]
+        iso3c %in% clustering[["High tech model"]]
       ), CA_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Finance"]]
+        iso3c %in% clustering[["Financel hub"]]
       ), CA_cum)$iso3c
     )
   ) +
@@ -586,8 +577,11 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range) {
     ggtitle(
       paste0("Inequality in ", time_period[1], " and ", time_period[2])
     ) +
-    scale_fill_icae(palette = "mixed") +
-    scale_color_icae(palette = "mixed")
+    scale_fill_manual(
+      limits = names(unlist(cluster_cols)),
+      values = c(unlist(cluster_cols)),
+      aesthetics = c("fill", "color")
+    )
 
   return(ineq_comparison_plot)
 }
@@ -690,9 +684,7 @@ ineq_dynamics_post <- ggplot(
     alpha = 0.5, color = NA
   ) +
   geom_line() +
-  geom_point() +
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
+  geom_point()
 
 ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
   ggtitle("Income inequality (Gini post tax)") +
@@ -707,8 +699,11 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
     breaks = seq(1994, 2016, 2),
     expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))
   ) +
-  scale_color_icae(palette = "mixed") +
-  scale_fill_icae(palette = "mixed")
+  scale_fill_manual(
+    limits = names(unlist(cluster_cols)),
+    values = c(unlist(cluster_cols)),
+    aesthetics = c("fill", "color")
+  )
 
 ineq_dynamics_post
 

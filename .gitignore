@@ -4,3 +4,6 @@
 .Ruserdata
 .DS_Store
 output
+src/old
+src/dennis
+data/old
