@@ -7,9 +7,7 @@ library(factoextra)
 library(NbClust)
 library(cluster)
 library(icaeDesign)
-# TODO Identify source of difference with branch master
-make_taxonomy_plots <- FALSE # Set to T to make taxonomy plots as in JEE (but not yet updated)
-test_nb_clusters <- FALSE
+
 # Function definitions=========================================================
 source("src/clustering_functions.R")
 
@@ -61,13 +59,8 @@ write(
     xtable::xtable(cluster_comparison),
     type = "html"
   ), 
-  file = "output/cluster_algorithms_comparison.html"
+  file = "output/table_2_cluster_algorithms_comparison.html"
 )
-
-# Test for number of clusters==================================================
-if (test_nb_clusters){
-  source("src/nb_clusters.R")
-}
 
 # Illustration of group differences============================================
 
@@ -100,23 +93,23 @@ data_taxonomy <- data_taxonomy %>%
     )
 
 # Taxonomy table---------------------------------------------------------------
-table_order <- c("VA_manufct_gdp",
+table_order <- c("empl_agr",
                  "oil_exports_share",
                  "primary_exports_share_1",
                  "res_rents",
-                 "empl_agr",
+                 "VA_manufct_gdp",
                  
-                 "empl_ind", "empl_serv",
                  "complexity_harv",
+                 "empl_ind", 
                  "gerd",
-                 "gov_exp_educ",
                  "ict_ksh",
+                 "gov_exp_educ",
                  
                  "coord",
                  "employment_protect",
                  "ubr", 
-                 "adjusted_wage_share",
                  "average_wages",
+                 "adjusted_wage_share",
                  
                  "tax_corpcap",
                  "tax_estate_plus_wealth",
@@ -141,5 +134,5 @@ write(
     xtable::xtable(taxonomy_table_data),
     type = "html"
   ), 
-  file = "output/taxonomy_table.html"
+  file = "output/table_3_taxonomy_table.html"
 )
