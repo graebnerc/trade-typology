@@ -4,15 +4,6 @@ library(tidyverse)
 library(data.table)
 library(icaeDesign)
 
-icae_public_colors <- c(
-  `orange` = "#ff9900",
-  `purple` = "#8600b3",
-  `dark green` = "#006600",
-  `sand` = "#d8c469",
-  `dark blue` = "#002b80",
-  `dark red` = "#800000"
-)
-
 clustering <- list(
   "Primary goods" =
     countrycode::countrycode(
@@ -45,12 +36,12 @@ clustering <- list(
 )
 
 cluster_cols <- list(
-  "High tech" = unname(icae_public_colors["dark blue"]),
-  "Periphery" = unname(icae_public_colors["purple"]),
-  "UK" = unname(icae_public_colors["dark red"]),
-  "Catchup" = unname(icae_public_colors["dark green"]),
-  "Primary goods" = unname(icae_public_colors["sand"]),
-  "Finance" = unname(icae_public_colors["orange"])
+  "High tech" = unname(get_icae_colors("dark blue")),
+  "Periphery" = unname(get_icae_colors("purple")),
+  "UK" = unname(get_icae_colors("dark red")),
+  "Catchup" = unname(get_icae_colors("dark green")),
+  "Primary goods" = unname(get_icae_colors("sand")),
+  "Finance" = unname(get_icae_colors("orange"))
 )
 
 # Set up dataset===============================================================
