@@ -4,7 +4,6 @@ library(data.table)
 library(tidyverse)
 library(haven)
 library(factoextra)
-library(NbClust)
 library(cluster)
 library(icaeDesign)
 
