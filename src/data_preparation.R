@@ -5,7 +5,7 @@ library(countrycode)
 library(data.table)
 library(tidyverse)
 library(WDI)
-update_data <- T
+update_data <- F
 export_data_source <- "MIT" # "MIT" or "HARV"
 
 countries_considered <- strsplit(
@@ -56,7 +56,7 @@ if (update_data) {
     ))
     data.table::fwrite(trade_to_gdp_raw, trade_to_gdp_file_name)
   } else {
-    trade_to_gdp_raw <- data.table::fread(exp_to_gdp_file_name)
+    trade_to_gdp_raw <- data.table::fread(trade_to_gdp_file_name)
   }
 }
 
