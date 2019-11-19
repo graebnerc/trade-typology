@@ -71,9 +71,6 @@ write(
 
 data_taxonomy <- cluster_data
 
-vars_all <- c(rel_vars, nrel_vars)
-sort(vars_all)
-
 clustering <- list(
   "Cluster_1" = c("Latvia", "Estonia"),
   "Cluster_2" = c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia"),
@@ -141,3 +138,4 @@ write(
   ), 
   file = "output/table_3_taxonomy_table.html"
 )
+
