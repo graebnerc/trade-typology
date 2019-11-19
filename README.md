@@ -6,7 +6,12 @@ Timo Kapelari,
 
 Here we provide the data and the code to replicate all empirical exercises 
 in the abovementioned paper.
-You can access a freely available working paper version of the paper here.
+You can access a freely available working paper version of the paper [here](https://www.jku.at/fileadmin/gruppen/108/ICAE_Working_Papers/wp95.pdf).
+
+The paper is work in progress, so we are grateful for suggestions. 
+Yu can cite the paper as:
+
+Gräbner, C., Tamesberger, D., Heimberger, P., Kapelari, T., & Kapeller, J. (2019): Trade Models in the European Union. *ICAE Working Paper*, No. 95
 
 ## Code structure
 
