@@ -1,6 +1,5 @@
-# 15.03.2019: Create new data for endownment dimension
-# 29.03.2019: Distinguish export and trade/GDP from world bank
-rm(list = ls())
+here::i_am("src/data_preparation.R")
+library(here)
 library(countrycode)
 library(data.table)
 library(tidyverse)
@@ -21,7 +20,7 @@ if (update_data){
                                               indicator = "ny.gdp.totl.rt.zs", 
                                               start = 1962, end = 2016))
   data.table::fwrite(nat_res_rents_raw, nat_res_rents_file_name)
-} else {# TODO Test whether file exists
+} else {
   nat_res_rents_raw <- data.table::fread(nat_res_rents_file_name)
 }
 
@@ -84,7 +83,7 @@ if (export_data_source=="MIT"){
     export_data_raw[, location_code:=countrycode(
       countrycode(origin, "id_3char", "name", 
                   custom_dict = mit_country_names), 
-      "country.name", "iso3c")] # TODO Fix location code
+      "country.name", "iso3c")] 
     export_data_raw <- export_data_raw[location_code %in% countrycode(
       countries_considered, "iso2c", "iso3c"), 
       .(year, export_value=export_val, location_code, sitc_product_code=sitc)]
@@ -201,7 +200,6 @@ primary_goods_codes_2 <- c(primary_goods_codes_1, "3")
 # 4	Animal and vegetable oils, fats and waxes
 # Unklar:
 # 3	Mineral fuels, lubricants and related materials
-# TODO das stimmt noch nicht: nicht die subsets genommen, und gibt summe>100
 primary_exports_data <- copy(export_data_raw)
 primary_exports_data[, sitc_main:=substr(sitc_product_code, 1, 1)
                      ][sitc_main%in%primary_goods_codes_1, 
@@ -234,10 +232,11 @@ head(trade_to_gdp)
 head(primary_exports_data)
 head(oil_exports)
 head(coal_metal_shares)
+
 full_data <- dplyr::full_join(coal_metal_shares, oil_exports, 
                               by=c("year", "location_code")) %>%
   dplyr::full_join(., primary_exports_data, by=c("year", "location_code")) %>%
   dplyr::full_join(., trade_to_gdp, by=c("year", "location_code"="iso2c")) %>%
   dplyr::full_join(., nat_res_rents, by=c("year", "location_code"="iso2c"))
-fwrite(full_data, paste0("data/dimension_endownment_data_", 
-                         export_data_source, ".csv"))
+fwrite(full_data, here(paste0("data/dimension_endownment_data_", 
+                              export_data_source, ".csv")))

@@ -1,4 +1,3 @@
-rm(list = ls())
 # All packages used in at least one R file:
 library(devtools)
 library(knitr)
