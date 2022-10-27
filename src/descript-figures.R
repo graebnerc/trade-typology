@@ -1,8 +1,10 @@
 # Creates figures 3 to 6 from the main paper
-rm(list = ls())
+here::i_am("src/descript-figures.R")
+library(here)
 library(tidyverse)
 library(data.table)
 library(icaeDesign)
+library(countrycode)
 
 clustering <- list(
   "Primary goods model" =
@@ -45,7 +47,7 @@ cluster_cols <- list(
 )
 
 # Set up dataset===============================================================
-set_up_macro_data <- TRUE # Extracts data from package MacroDataR
+set_up_macro_data <- FALSE # Extracts data from package MacroDataR
 macro_data_file_name <- "data/descriptive_data.csv"
 
 if (set_up_macro_data) {
@@ -70,10 +72,17 @@ if (set_up_macro_data) {
       iso3c %in% countries_considered,
       year > 1993
     )
-
-  data.table::fwrite(macro_data, macro_data_file_name)
+  trade_balance <- WDI::WDI(
+    country = countrycode(unique(macro_data$iso3c), "iso3c", "iso2c"), 
+    start = min(macro_data$year), 
+    end = max(macro_data$year), 
+    indicator = c(
+      "ext_balance_usd"="NE.RSB.GNFS.CD",
+      "ext_balance_gdp"="NE.RSB.GNFS.ZS")) 
+  macro_data <- left_join(macro_data, trade_balance, by = c("iso3c", "year"))
+  data.table::fwrite(macro_data, here(macro_data_file_name))
 } else {
-  macro_data <- data.table::fread(macro_data_file_name)
+  macro_data <- data.table::fread(here(macro_data_file_name))
 }
 
 # Add the clusters to the data=================================================
@@ -85,7 +94,7 @@ for (cl in names(clustering)) {
     mutate(cluster = ifelse(iso3c %in% clustering[[cl]], cl, cluster))
 }
 
-# Merge macro data-------------------------------------------------------------
+# Aggregate macro data---------------------------------------------------------
 
 macro_data_agg <- macro_data %>%
   select(-iso3c) %>%
@@ -93,11 +102,11 @@ macro_data_agg <- macro_data %>%
   summarise_all(.funs = c(mean, sd), na.rm = T) %>%
   ungroup()
 
-# Add cumulative data----------------------------------------------------------
+# Add cumulative/average data--------------------------------------------------
 macro_data_cumulated <- macro_data %>%
   select(
     iso3c, year, current_account_GDP_ameco,
-    gdp_real_pc_ppp, unemp_rate
+    gdp_real_pc_ppp, unemp_rate, ext_balance_gdp
   ) %>%
   filter(year > 1993, year < 2018) %>%
   group_by(iso3c) %>%
@@ -108,6 +117,7 @@ macro_data_cumulated <- macro_data %>%
   ) %>%
   summarise(
     CA_cum = mean(current_account_GDP_ameco, na.rm = T),
+    TB_cum = mean(ext_balance_gdp, na.rm = TRUE),
     GDPpc_cum = mean(gdp_real_pc_ppp, na.rm = T),
     GDPpc_growth_cum = mean(gdp_real_pc_ppp_growth, na.rm = T),
     unemp_rates = mean(unemp_rate, na.rm = T),
@@ -148,6 +158,7 @@ pretty_up_ggplot <- function(old_plot,
       axis.line = element_line(),
       legend.position = "bottom",
       legend.title = element_blank(),
+      legend.text = element_text(size = 12),
       legend.spacing.x = unit(0.2, "cm")
     )
   if (type_x_axis == "continuous") {
@@ -167,11 +178,12 @@ ks <- function(x) {
   )(x)
 }
 
-fig_width <- 9
-fig_height <- 6
+fig_width <- 7
+fig_height <- 4.5
 
 first_year <- 1995 # chosen for data availability
 last_year <- 2017 # chosen for data availability
+
 
 # Figure 3: GDP per capita-----------------------------------------------------
 fig_gdp_pc <- ggplot(
@@ -273,6 +285,7 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
     axis.text.x = element_text(size = 7),
     legend.position = "bottom",
     legend.title = element_blank(),
+    legend.text = element_text(size = 12),
     legend.spacing.x = unit(0.2, "cm")
   )
 fig_gdp_cum_growth
@@ -284,7 +297,7 @@ gdp_pc_full <- ggpubr::ggarrange(
 )
 ggsave(
   plot = gdp_pc_full,
-  filename = "output/fig_3_gdp-growth.pdf",
+  filename = here("output/fig_3_gdp-growth.pdf"),
   width = fig_width * 1.5, height = fig_height
 )
 
@@ -402,6 +415,7 @@ unemp_cum <- ggplot(macro_data_cumulated) +
     axis.title = element_blank(),
     axis.text.x = element_text(size = 7),
     legend.position = "bottom",
+    legend.text = element_text(size = 12),
     legend.title = element_blank(),
     legend.spacing.x = unit(0.2, "cm")
   )
@@ -415,9 +429,10 @@ unemp_full <- ggpubr::ggarrange(
 )
 ggsave(
   plot = unemp_full,
-  filename = "output/fig_4_unemployment.pdf",
+  filename = here("output/fig_4_unemployment.pdf"),
   width = fig_width * 1.5, height = fig_height
 )
+
 
 # Figure 5: Current account----------------------------------------------------
 
@@ -461,7 +476,8 @@ fig_current_account_abs <- pretty_up_ggplot(fig_current_account_abs) +
     )
   ) +
   theme(
-    axis.title = element_blank()
+    axis.title = element_blank(),
+    legend.text = element_text(size = 12),
   )
 
 fig_current_account_abs
@@ -521,6 +537,7 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
     axis.title = element_blank(),
     axis.text.x = element_text(size = 7),
     legend.position = "bottom",
+    legend.text = element_text(size = 12),
     legend.title = element_blank(),
     legend.spacing.x = unit(0.2, "cm")
   )
@@ -533,7 +550,7 @@ fig_current_account_full <- ggpubr::ggarrange(
 )
 
 ggsave(
-  filename = "output/fig_5_current-account.pdf",
+  filename = here("output/fig_5_current-account.pdf"),
   width = fig_width * 1.5, height = fig_height
 )
 
@@ -716,7 +733,7 @@ full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
 )
 
 ggsave(
-  filename = "output/fig_6_inquality-dynamics.pdf",
+  filename = here("output/fig_6_inquality-dynamics.pdf"),
   plot = full_ineq_dynamics_plot_post,
   height = fig_height, width = 1.2 * fig_width
 )
