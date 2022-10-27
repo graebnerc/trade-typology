@@ -1,17 +1,20 @@
 # Trade Models in the European Union
-[Claudius Gräbner](https://claudius-graebner.com), Dennis Tamesberger, 
+[Claudius Gräbner-Radkowitsch](https://claudius-graebner.com), Dennis Tamesberger, 
 Timo Kapelari, 
 [Philipp Heimberger](https://wiiw.ac.at/philipp-heimberger-s-1138.html) and 
 [Jakob Kapeller](https://jakob-kapeller.org/)
 
 Here we provide the data and the code to replicate all empirical exercises 
-in the abovementioned paper.
-You can access a freely available working paper version of the paper [here](https://www.jku.at/fileadmin/gruppen/108/ICAE_Working_Papers/wp95.pdf).
+in the above mentioned paper.
+You can also access a freely available working paper version of the paper 
+[here](https://www.jku.at/fileadmin/gruppen/108/ICAE_Working_Papers/wp95.pdf).
 
-The paper is work in progress, so we are grateful for suggestions. 
-Yu can cite the paper as:
+The paper has also published in the journal *Economic Annals*. The official 
+reference is:
 
-Gräbner, C., Tamesberger, D., Heimberger, P., Kapelari, T., & Kapeller, J. (2019): Trade Models in the European Union. *ICAE Working Paper*, No. 95
+Gräbner-Radkowitsch, C., Tamesberger, D., Heimberger, P., Kapelari, T., & 
+Kapeller, J. (2022): Trade Models in the European Union. *Economic Annals*, 
+Vol. 67(235), forthcoming. DOI: [TBA]().
 
 ## Code structure
 
@@ -21,17 +24,13 @@ clustering and will be called from `src/clustering.R`.
 `src/clustering.R` conducts all the clustering exercises and produces figure 2, 
 as well as tables 2 and 3.
 
-`src/data_preparation.R` has been used to assemble the data set. Will not be 
-called by default since the data set used for the clustering in the paper has 
-been saved as `data/clustering_data_used.csv`. But it is provided for reasons
-of transparency.
-
 `src/descript-figures.R` creates figures 3, 4, 5 and 6.
 
 `src/system_spec.R` has been used to get the system specification used to
 create the figures of the published paper.
 
 ## Data 
+
 For more information about the data set see the supplementary material in the 
 working paper. The data has also been published in the 
 [Harvard Dataverse](https://doi.org/10.7910/DVN/NADWIL).
