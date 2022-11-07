@@ -113,7 +113,7 @@ fig_trade_balance_full <- ggpubr::ggarrange(
 )
 
 ggsave(
-  filename = here("output/fig_5a_trade-balance.pdf"),
+  filename = here("output/fig_5_trade-balance.pdf"),
   width = fig_width * 1.5, height = fig_height
 )
 
@@ -122,9 +122,4 @@ fig_CA_TB_full <- ggpubr::ggarrange(
   fig_trade_balance_cum, fig_trade_balance_abs,
   ncol = 2, nrow = 2, common.legend = TRUE, legend = "bottom",
   labels = c("A)", "B)", "C)", "D)"), font.label = list(face = "bold")
-)
-
-ggsave(
-  filename = here("output/fig_5b_CA-TB.pdf"),
-  width = fig_width * 1.5, height = fig_height*1.5
 )
