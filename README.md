@@ -1,7 +1,7 @@
 # Trade Models in the European Union
 [Claudius Gräbner-Radkowitsch](https://claudius-graebner.com), Dennis Tamesberger, 
-Timo Kapelari, 
-[Philipp Heimberger](https://wiiw.ac.at/philipp-heimberger-s-1138.html) and 
+[Philipp Heimberger](https://wiiw.ac.at/philipp-heimberger-s-1138.html),
+Timo Kapelari, and 
 [Jakob Kapeller](https://jakob-kapeller.org/)
 
 Here we provide the data and the code to replicate all empirical exercises 
