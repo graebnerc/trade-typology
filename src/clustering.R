@@ -1,4 +1,5 @@
-rm(list = ls())
+here::i_am("src/clustering.R")
+library(here)
 library(countrycode)
 library(data.table)
 library(tidyverse)
@@ -8,20 +9,10 @@ library(cluster)
 library(icaeDesign)
 
 # Function definitions=========================================================
-source("src/clustering_functions.R")
+source(here("src/clustering_functions.R"))
 
 # Data preparation=============================================================
-prepare_data_from_scratch <- F
-if (prepare_data_from_scratch){
-  source("src/clustering_data.R")
-  
-  cluster_data <- cluster_data_R_v4
-  
-  fwrite(cluster_data, "data/clustering_data.csv")
-} else{
-  cluster_data <- fread("data/clustering_data.csv")
-}
-
+cluster_data <- fread(here("data/clustering_data.csv"))
 
 # Cluster implementation=======================================================
 
@@ -64,7 +55,7 @@ write(
     xtable::xtable(cluster_comparison),
     type = "html"
   ), 
-  file = "output/table_2_cluster_algorithms_comparison.html"
+  file = here("output/table_2_cluster_algorithms_comparison.html")
 )
 
 # Illustration of group differences============================================
@@ -73,7 +64,8 @@ data_taxonomy <- cluster_data
 
 clustering <- list(
   "Cluster_1" = c("Latvia", "Estonia"),
-  "Cluster_2" = c("Slovenia", "Poland","Slovakia","Hungary", "Czech Republic", "Czechia"),
+  "Cluster_2" = c("Slovenia", "Poland","Slovakia","Hungary", 
+                  "Czech Republic", "Czechia"),
   "Cluster_3" = c("United Kingdom"),
   "Cluster_4" = c("Luxembourg"),
   "Cluster_5" = c("Greece", "Portugal", "Spain", "Italy", "France"),
@@ -138,4 +130,3 @@ write(
   ), 
   file = "output/table_3_taxonomy_table.html"
 )
-

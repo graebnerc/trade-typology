@@ -1,4 +1,3 @@
-rm(list = ls())
 # All packages used in at least one R file:
 library(devtools)
 library(knitr)
@@ -7,7 +6,6 @@ library(data.table)
 library(tidyverse)
 library(factoextra)
 library(cluster)
-library(MacroDataR)
 library(icaeDesign)
 library(tidyverse)
 library(data.table)

@@ -37,7 +37,6 @@ do_clustering <- function(data_file,
     colors_clustering <- RColorBrewer::brewer.pal(n_groups, "Dark2")
   }
   
-  
   cluster_plot <- factoextra::fviz_dend(clustering_object, 
                                         k = nb_groups, 
                                         cex = 0.75, # label size
@@ -94,18 +93,17 @@ save_dendogram <- function(clustering_variables, number_groups, vers=FALSE){
   clustering_dendogram
   
   if (vers){
-    file_name <- paste0("output/fig_2_clustering_", vers, ".pdf")
+    file_name <- here(paste0("output/fig_2_clustering_", vers, ".pdf"))
   } else {
-    file_name <- "output/fig_2_clustering.pdf"
+    file_name <- here("output/fig_2_clustering.pdf")
   }
   
   ggplot2::ggsave(plot = clustering_dendogram,
                   filename = file_name, 
-                  width = 8, height = 6)
+                  width = 7.5, height = 4)
   
   return(clustering_dendogram)
 }
-
 
 
 #' Compare clustering algorithms
@@ -147,6 +145,7 @@ compare_clustering_types <- function(raw_dat,
   return(info_frame)
 }
 
+
 #' Setup data for cluster taxonomy
 #' 
 #' Takes the taxonomy data and returns a data frame that can be used
@@ -176,6 +175,7 @@ setup_taxonomy_data <- function(data_used,
   # TODO check for NA
   return(cluster_data)
 }
+
 
 #' Make the taxonomy plots
 #' 
