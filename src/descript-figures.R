@@ -434,20 +434,20 @@ ggsave(
 )
 
 
-# Figure 5: Current account----------------------------------------------------
+# Figure 5: Trade balance----------------------------------------------------
 
-fig_current_account_abs <- ggplot(
+fig_trade_balance_abs <- ggplot(
   macro_data_agg,
   aes(
     x = year,
-    y = current_account_GDP_ameco_fn1,
+    y = ext_balance_gdp_fn1,
     color = cluster
   )
 ) +
   geom_ribbon(
     aes(
-      ymin = current_account_GDP_ameco_fn1 - 0.5 * current_account_GDP_ameco_fn2,
-      ymax = current_account_GDP_ameco_fn1 + 0.5 * current_account_GDP_ameco_fn2,
+      ymin = ext_balance_gdp_fn1 - 0.5 * ext_balance_gdp_fn2,
+      ymax = ext_balance_gdp_fn1 + 0.5 * ext_balance_gdp_fn2,
       fill = cluster
     ),
     alpha = 0.5, color = NA
@@ -455,11 +455,11 @@ fig_current_account_abs <- ggplot(
   geom_line() +
   geom_point()
 
-fig_current_account_abs <- pretty_up_ggplot(fig_current_account_abs) +
-  ggtitle("Current Account in % of GDP (1995-2017)") +
+fig_trade_balance_abs <- pretty_up_ggplot(fig_trade_balance_abs) +
+  ggtitle("External Balance in % of GDP (1995-2017)") +
   scale_y_continuous(
-    limits = c(-20, 11),
-    breaks = seq(-20, 10, 5),
+    limits = c(-20, 35),
+    breaks = seq(-20, 30, 5),
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
   scale_fill_manual(
@@ -476,53 +476,52 @@ fig_current_account_abs <- pretty_up_ggplot(fig_current_account_abs) +
     )
   ) +
   theme(
-    axis.title = element_blank(),
-    legend.text = element_text(size = 12),
+    axis.title = element_blank()
   )
 
-fig_current_account_abs
+fig_trade_balance_abs
 
-fig_current_account_cum <- ggplot(macro_data_cumulated) +
+fig_trade_balance_cum <- ggplot(macro_data_cumulated) +
   geom_bar(aes(
-    x = reorder(iso3c, CA_cum),
-    y = CA_cum,
+    x = reorder(iso3c, TB_cum),
+    y = TB_cum,
     fill = cluster, color = cluster
   ),
   stat = "identity"
   ) +
-  ggtitle("Average Current Account in % of GDP (1995-2017)") +
-  ylab("Average current account") +
+  ggtitle("Average Trade Balance in % of GDP (1995-2017)") +
+  ylab("Average Trade Balance") +
   scale_x_discrete(
     limits = c(
       arrange(filter(
         macro_data_cumulated,
         iso3c %in% clustering[["Periphery"]]
-      ), CA_cum)$iso3c,
+      ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
         iso3c %in% clustering[["Primary goods model"]]
-      ), CA_cum)$iso3c,
+      ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
         iso3c %in% clustering[["Flexible labor markets model"]]
-      ), CA_cum)$iso3c,
+      ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
         iso3c %in% clustering[["Industrial workbench model"]]
-      ), CA_cum)$iso3c,
+      ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
         iso3c %in% clustering[["High tech model"]]
-      ), CA_cum)$iso3c,
+      ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
         iso3c %in% clustering[["Financel hub"]]
-      ), CA_cum)$iso3c
+      ), TB_cum)$iso3c
     )
   ) +
   scale_y_continuous(
-    limits = c(-7.1, 7),
-    breaks = seq(-6, 6, 2),
+    limits = c(-10, 27),
+    breaks = seq(-10, 25, 5),
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
   scale_fill_manual(
@@ -541,16 +540,16 @@ fig_current_account_cum <- ggplot(macro_data_cumulated) +
     legend.title = element_blank(),
     legend.spacing.x = unit(0.2, "cm")
   )
-fig_current_account_cum
+fig_trade_balance_cum
 
-fig_current_account_full <- ggpubr::ggarrange(
-  fig_current_account_cum, fig_current_account_abs,
+fig_trade_balance_full <- ggpubr::ggarrange(
+  fig_trade_balance_cum, fig_trade_balance_abs,
   ncol = 2, nrow = 1, common.legend = T, legend = "bottom",
   labels = c("A)", "B)"), font.label = list(face = "bold")
 )
 
 ggsave(
-  filename = here("output/fig_5_current-account.pdf"),
+  filename = here("output/fig_5_trade-balance.pdf"),
   width = fig_width * 1.5, height = fig_height
 )
 
@@ -561,7 +560,7 @@ ggsave(
 #'
 #' Takes inequality data and creates a barplot. Will be used to create
 #'  similar plots for early, late and overall time period. The plot
-#'  will visualize changes frim first to last data point in all
+#'  will visualize changes from first to last data point in all
 #'  the variables.
 #'
 #' @param barplot_data The inequality data for the barplot
