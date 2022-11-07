@@ -489,7 +489,7 @@ fig_trade_balance_cum <- ggplot(macro_data_cumulated) +
   ),
   stat = "identity"
   ) +
-  ggtitle("Average Trade Balance in % of GDP (1995-2017)") +
+  ggtitle("Average External Balance in % of GDP (1995-2017)") +
   ylab("Average Trade Balance") +
   scale_x_discrete(
     limits = c(
