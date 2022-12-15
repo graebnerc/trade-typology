@@ -46,3 +46,9 @@ All figures will be saved in this folder.
 
 The file `output/session_info.txt` contains information about the hardware as 
 well as the packages used when the output for the original paper was produced.
+
+**Note:** it might be that for the clustering to work, `ggplot2` must be 
+downgraded to version 3.3.6. due to a bug in the `factoextra` package; in this
+case, however, the descriptive figures cannot be replicated since 
+`ggpattern` requires ggplot2 >= 3.4.0. So switching between versions might be
+necessary.
