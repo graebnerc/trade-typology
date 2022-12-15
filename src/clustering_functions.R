@@ -1,5 +1,5 @@
-icae_cols <- c("#006600", "#ff9900", "#002b80", 
-               "#8600b3","#d8c469", "#800000")
+icae_cols <- c("#696969", "#888888", "#A0A0A0", 
+               "#B0B0B0", "#C8C8C8", "#D8D8D8")
 
 #' Clustering
 #' 
@@ -37,16 +37,17 @@ do_clustering <- function(data_file,
     colors_clustering <- RColorBrewer::brewer.pal(n_groups, "Dark2")
   }
   
-  cluster_plot <- factoextra::fviz_dend(clustering_object, 
-                                        k = nb_groups, 
-                                        cex = 0.75, # label size
-                                        rect = TRUE, # Add rectangle around groups
-                                        rect_fill = TRUE,
-                                        color_labels_by_k = TRUE, # color labels by groups
-                                        k_colors = colors_clustering,
-                                        rect_border = colors_clustering,
-                                        horiz = TRUE
-                                        ) + 
+  cluster_plot <- factoextra::fviz_dend(
+    clustering_object, 
+    k = nb_groups, 
+    cex = 0.75, # label size
+    rect = TRUE, # Add rectangle around groups
+    rect_fill = TRUE,
+    color_labels_by_k = FALSE, # color labels by groups
+    k_colors = "black",
+    rect_border = colors_clustering,
+    horiz = TRUE
+    ) + 
     theme(axis.text.x = element_blank(),
           axis.ticks.x = element_blank()
           )
@@ -238,3 +239,4 @@ make_plots <- function(data_used,
     return(final_plots)
   }
 }
+

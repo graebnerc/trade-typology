@@ -7,6 +7,7 @@ library(haven)
 library(factoextra)
 library(cluster)
 library(icaeDesign)
+library(RColorBrewer)
 
 # Function definitions=========================================================
 source(here("src/clustering_functions.R"))
