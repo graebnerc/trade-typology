@@ -5,6 +5,7 @@ library(tidyverse)
 library(data.table)
 library(icaeDesign)
 library(countrycode)
+library(ggpattern)
 
 clustering <- list(
   "Primary goods model" =
@@ -16,11 +17,11 @@ clustering <- list(
     c("Slovenia", "Poland", "Slovakia", "Hungary", "Czech Republic", "Czechia"),
     "country.name", "iso3c"
   ),
-  "Flexible labor markets model" = countrycode::countrycode(
+  "Flexible labour markets model" = countrycode::countrycode(
     c("United Kingdom"),
     "country.name", "iso3c"
   ),
-  "Financel hub" = countrycode::countrycode(
+  "Finance model" = countrycode::countrycode(
     c("Luxembourg"),
     "country.name", "iso3c"
   ),
@@ -28,7 +29,7 @@ clustering <- list(
     c("Greece", "Portugal", "Spain", "Italy", "France"),
     "country.name", "iso3c"
   ),
-  "High tech model" = countrycode::countrycode(
+  "High-tech model" = countrycode::countrycode(
     c(
       "Sweden", "Finland", "Denmark", "Netherlands",
       "Belgium", "Germany", "Austria", "Ireland"
@@ -38,12 +39,21 @@ clustering <- list(
 )
 
 cluster_cols <- list(
-  "High tech model" = unname(get_icae_colors("dark blue")),
+  "High-tech model" = unname(get_icae_colors("dark blue")),
   "Periphery" = unname(get_icae_colors("purple")),
-  "Flexible labor markets model" = unname(get_icae_colors("dark red")),
+  "Flexible labour markets model" = unname(get_icae_colors("dark red")),
   "Industrial workbench model" = unname(get_icae_colors("dark green")),
   "Primary goods model" = unname(get_icae_colors("sand")),
-  "Financel hub" = unname(get_icae_colors("orange"))
+  "Finance model" = unname(get_icae_colors("orange"))
+)
+
+cluster_cols <- list(
+  "High-tech model" = unname(get_icae_colors("dark blue")),
+  "Periphery" = unname(get_icae_colors("purple")),
+  "Flexible labour markets model" = unname(get_icae_colors("dark red")),
+  "Industrial workbench model" = unname(get_icae_colors("dark green")),
+  "Primary goods model" = unname(get_icae_colors("sand")),
+  "Finance model" = unname(get_icae_colors("orange"))
 )
 
 # Set up dataset===============================================================
@@ -100,7 +110,18 @@ macro_data_agg <- macro_data %>%
   select(-iso3c) %>%
   group_by(year, cluster) %>%
   summarise_all(.funs = c(mean, sd), na.rm = T) %>%
-  ungroup()
+  ungroup() %>% 
+  dplyr::mutate(
+    cluster_n = str_replace_all(
+      cluster, 
+      c("Flexible labour markets model" = "Flexible labour\n markets model",
+        "Industrial workbench model" = "Industrial\n workbench model",
+        "Primary goods model" = "Primary\n goods model"
+        
+      )
+    ))
+
+
 
 # Add cumulative/average data--------------------------------------------------
 macro_data_cumulated <- macro_data %>%
@@ -124,7 +145,8 @@ macro_data_cumulated <- macro_data %>%
     unemp_rate_cum = mean(unemp_rate_change, na.rm = T),
     unemp_rate_sum = sum(unemp_rate_change, na.rm = T)
   ) %>%
-  ungroup()
+  ungroup() %>% 
+  dplyr::mutate(cname=countrycode(iso3c, "iso3c", "country.name"))
 macro_data_cumulated$cluster <- NA
 
 for (cl in names(clustering)) {
@@ -186,12 +208,14 @@ last_year <- 2017 # chosen for data availability
 
 
 # Figure 3: GDP per capita-----------------------------------------------------
+set.seed(123)
 fig_gdp_pc <- ggplot(
   filter(macro_data_agg, year < 2018),
   aes(
     x = year,
     y = gdp_real_pc_ppp_fn1,
-    color = cluster
+    color = cluster,
+    shape = cluster
   )
 ) +
   geom_ribbon(
@@ -203,22 +227,33 @@ fig_gdp_pc <- ggplot(
     alpha = 0.5, color = NA
   ) +
   geom_line() +
-  geom_point()
+  geom_point() 
 
 fig_gdp_pc <- pretty_up_ggplot(fig_gdp_pc) +
   ggtitle("Real GDP per capita") +
-  scale_x_continuous(limits = c(first_year, last_year), expand = c(0, 0)) +
+  scale_x_continuous(
+    limits = c(first_year, last_year), 
+    expand = expansion(add = c(0.5, 10))
+    ) +
+  ggrepel::geom_label_repel(
+    data = dplyr::filter(
+      macro_data_agg, year==(last_year-1)),
+    mapping = aes(
+      x = year,
+      y = gdp_real_pc_ppp_fn1,
+      label = cluster_n), 
+    show.legend = FALSE, 
+    direction = "both", 
+    nudge_x = 4,
+    force_pull = 0.25, force = 2.5, 
+    xlim = c(2013, 2027)
+    ) +
   scale_y_continuous(labels = ks) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
-  ) +
   theme(
     axis.title = element_blank(),
     axis.title.y = element_blank()
-  )
-
+  ) +
+  scale_color_grey(aesthetics = c("color", "fill"))
 fig_gdp_pc
 
 fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
@@ -239,19 +274,19 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Flexible labor markets model"]]
+          iso3c %in% clustering[["Flexible labour markets model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Financel hub"]]
+          iso3c %in% clustering[["Finance model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["High tech model"]]
+          iso3c %in% clustering[["High-tech model"]]
         ), GDPpc_growth_cum
       )$iso3c,
       arrange(
@@ -272,11 +307,11 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
     labels = scales::percent_format(scale = 100, accuracy = 1),
     expand = c(0, 0)
   ) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
-  ) +
+  # scale_fill_manual(
+  #   limits = names(unlist(cluster_cols)),
+  #   values = c(unlist(cluster_cols)),
+  #   aesthetics = c("fill", "color")
+  # ) +
   theme_bw() +
   theme(
     panel.border = element_blank(),
@@ -287,11 +322,28 @@ fig_gdp_cum_growth <- ggplot(macro_data_cumulated) +
     legend.title = element_blank(),
     legend.text = element_text(size = 12),
     legend.spacing.x = unit(0.2, "cm")
-  )
+  ) + 
+  geom_col_pattern(
+    aes(
+      x = reorder(iso3c, GDPpc_growth_cum),
+      y = GDPpc_growth_cum,
+      fill = cluster, color = cluster,
+      pattern = cluster, 
+      pattern_angle = cluster, 
+      pattern_spacing = cluster), 
+    fill            = 'white',
+    colour          = 'black',
+    pattern_density = 0.5, 
+    pattern_fill    = 'black',
+    pattern_colour  = 'grey', 
+    show.legend = TRUE
+  ) +
+  scale_pattern_spacing_discrete(range = c(0.01, 0.1))
 fig_gdp_cum_growth
-
+  
 gdp_pc_full <- ggpubr::ggarrange(
-  fig_gdp_cum_growth, fig_gdp_pc,
+  fig_gdp_cum_growth, 
+  fig_gdp_pc,
   ncol = 2, nrow = 1, common.legend = T, legend = "bottom",
   labels = c("A)", "B)"), font.label = list(face = "bold")
 )
@@ -303,13 +355,14 @@ ggsave(
 
 
 # Figure 4: Unemployment rate, 1994 - 2018-------------------------------------
-
+set.seed(123)
 unemp_rate <- ggplot(
   macro_data_agg,
   aes(
     x = year,
     y = unemp_rate_fn1,
-    color = cluster
+    color = cluster, 
+    shape = cluster
   )
 ) +
   geom_ribbon(
@@ -329,18 +382,25 @@ unemp_rate <- pretty_up_ggplot(unemp_rate) +
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
   scale_x_continuous(
-    limits = c(1995, 2018),
+    limits = c(first_year, last_year), 
     breaks = seq(1995, 2015, 5),
-    expand = expand_scale(
-      c(0, 0),
-      c(0, 0.25)
-    )
+    expand = expansion(add = c(0.5, 10))
   ) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
+  ggrepel::geom_label_repel(
+    data = dplyr::filter(
+      macro_data_agg, year==(last_year-0)),
+    mapping = aes(
+      x = year,
+      y = unemp_rate_fn1,
+      label = cluster_n), 
+    show.legend = FALSE, 
+    direction = "both", 
+    nudge_x = 6,
+    nudge_y = 0.05,
+    force_pull = 0.25, force = 3.5, max.time = 1, max.iter = 20000,
+    xlim = c(2010, 2025)
   ) +
+  scale_color_grey(aesthetics = c("color", "fill")) +
   theme(
     axis.title = element_blank()
   )
@@ -367,13 +427,13 @@ unemp_cum <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Flexible labor markets model"]]
+          iso3c %in% clustering[["Flexible labour markets model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["High tech model"]]
+          iso3c %in% clustering[["High-tech model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
@@ -385,7 +445,7 @@ unemp_cum <- ggplot(macro_data_cumulated) +
       arrange(
         filter(
           macro_data_cumulated,
-          iso3c %in% clustering[["Financel hub"]]
+          iso3c %in% clustering[["Finance model"]]
         ), unemp_rate_cum
       )$iso3c,
       arrange(
@@ -403,11 +463,6 @@ unemp_cum <- ggplot(macro_data_cumulated) +
     ),
     breaks = seq(-0.03, 0.05, 0.01)
   ) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
-  ) +
   theme_bw() +
   theme(
     panel.border = element_blank(),
@@ -418,24 +473,40 @@ unemp_cum <- ggplot(macro_data_cumulated) +
     legend.text = element_text(size = 12),
     legend.title = element_blank(),
     legend.spacing.x = unit(0.2, "cm")
-  )
+  ) + 
+  geom_col_pattern(
+    aes(
+      x = reorder(iso3c, unemp_rate_sum),
+      y = unemp_rate_cum,
+      fill = cluster, color = cluster,
+      pattern = cluster, 
+      pattern_angle = cluster, 
+      pattern_spacing = cluster), 
+    fill            = 'white',
+    colour          = 'black',
+    pattern_density = 0.4, 
+    pattern_fill    = 'black',
+    pattern_colour  = 'grey', 
+    show.legend = TRUE
+  ) +
+  scale_pattern_spacing_discrete(range = c(0.01, 0.1))
 unemp_cum
 
 
 unemp_full <- ggpubr::ggarrange(
   unemp_cum, unemp_rate,
-  ncol = 2, nrow = 1, common.legend = T, legend = "bottom",
+  ncol = 2, nrow = 1, common.legend = T, legend = "bottom", widths = c(1, 1.2),
   labels = c("A)", "B)"), font.label = list(face = "bold")
 )
 ggsave(
   plot = unemp_full,
   filename = here("output/fig_4_unemployment.pdf"),
-  width = fig_width * 1.5, height = fig_height
+  width = fig_width * 1.75, height = fig_height
 )
 
 
 # Figure 5: Trade balance----------------------------------------------------
-
+set.seed(123)
 fig_trade_balance_abs <- ggplot(
   macro_data_agg,
   aes(
@@ -462,19 +533,27 @@ fig_trade_balance_abs <- pretty_up_ggplot(fig_trade_balance_abs) +
     breaks = seq(-20, 30, 5),
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
-  ) +
   scale_x_continuous(
-    limits = c(1995, 2017),
+    limits = c(first_year, last_year), 
     breaks = seq(1995, 2015, 5),
-    expand = expand_scale(
-      c(0, 0),
-      c(0, 0.25)
-    )
+    expand = expansion(add = c(0.5, 10))
   ) +
+  ggrepel::geom_label_repel(
+    data = dplyr::filter(
+      macro_data_agg, year==(last_year-0)),
+    mapping = aes(
+      x = year,
+      y = ext_balance_gdp_fn1,
+      label = cluster_n), 
+    show.legend = FALSE, 
+    direction = "both", 
+    nudge_x = 6,
+    nudge_y = 0.05,
+    force_pull = 0.25, force = 4,
+    max.time = 1.5, max.iter = 30000,
+    xlim = c(2010, 2025)
+  ) +
+  scale_color_grey(aesthetics = c("color", "fill")) +
   theme(
     axis.title = element_blank()
   )
@@ -503,7 +582,7 @@ fig_trade_balance_cum <- ggplot(macro_data_cumulated) +
       ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Flexible labor markets model"]]
+        iso3c %in% clustering[["Flexible labour markets model"]]
       ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
@@ -511,11 +590,11 @@ fig_trade_balance_cum <- ggplot(macro_data_cumulated) +
       ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["High tech model"]]
+        iso3c %in% clustering[["High-tech model"]]
       ), TB_cum)$iso3c,
       arrange(filter(
         macro_data_cumulated,
-        iso3c %in% clustering[["Financel hub"]]
+        iso3c %in% clustering[["Finance model"]]
       ), TB_cum)$iso3c
     )
   ) +
@@ -523,11 +602,6 @@ fig_trade_balance_cum <- ggplot(macro_data_cumulated) +
     limits = c(-10, 27),
     breaks = seq(-10, 25, 5),
     labels = scales::percent_format(accuracy = 1, scale = 1)
-  ) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
   ) +
   theme_bw() +
   theme(
@@ -539,7 +613,23 @@ fig_trade_balance_cum <- ggplot(macro_data_cumulated) +
     legend.text = element_text(size = 12),
     legend.title = element_blank(),
     legend.spacing.x = unit(0.2, "cm")
-  )
+  ) + 
+  geom_col_pattern(
+    aes(
+      x = reorder(iso3c, TB_cum),
+      y = TB_cum,
+      fill = cluster, color = cluster,
+      pattern = cluster, 
+      pattern_angle = cluster, 
+      pattern_spacing = cluster), 
+    fill            = 'white',
+    colour          = 'black',
+    pattern_density = 0.4, 
+    pattern_fill    = 'black',
+    pattern_colour  = 'grey', 
+    show.legend = TRUE
+  ) +
+  scale_pattern_spacing_discrete(range = c(0.01, 0.1))
 fig_trade_balance_cum
 
 fig_trade_balance_full <- ggpubr::ggarrange(
@@ -555,7 +645,7 @@ ggsave(
 
 
 # Figure 6: Inequality comparison----------------------------------------------
-
+set.seed(123)
 #' Create an inequality barplot
 #'
 #' Takes inequality data and creates a barplot. Will be used to create
@@ -572,7 +662,7 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range) {
     geom_bar(aes(
       x = variable,
       y = value,
-      color = cluster,
+      #color = cluster,
       fill = cluster
     ),
     stat = "identity",
@@ -592,13 +682,7 @@ make_ineq_barplot <- function(barplot_data, time_period, x_axis_range) {
     ) +
     ggtitle(
       paste0("Inequality in ", time_period[1], " and ", time_period[2])
-    ) +
-    scale_fill_manual(
-      limits = names(unlist(cluster_cols)),
-      values = c(unlist(cluster_cols)),
-      aesthetics = c("fill", "color")
     )
-
   return(ineq_comparison_plot)
 }
 
@@ -679,7 +763,23 @@ ineq_plot_overall <- make_ineq_barplot(
   c(1994, 2016),
   x_barplot_range
 ) +
-  scale_x_discrete(labels = c("Gini (post)", "Gini (pre)", "Wage share"))
+  scale_x_discrete(labels = c("Gini (post)", "Gini (pre)", "Wage share")) + 
+  geom_col_pattern(
+    aes(
+      x = variable,
+      y = value,
+      fill = cluster, color = cluster,
+      pattern = cluster, 
+      pattern_angle = cluster, 
+      pattern_spacing = cluster), 
+    fill            = 'white',
+    colour          = 'black',
+    pattern_density = 0.4, 
+    pattern_fill    = 'black',
+    pattern_colour  = 'grey', 
+    show.legend = TRUE, position = position_dodge()
+  ) +
+  scale_pattern_spacing_discrete(range = c(0.01, 0.1))
 ineq_plot_overall
 
 gini_x_range <- c(1994, 2016)
@@ -688,7 +788,7 @@ ineq_dynamics_post <- ggplot(
   aes(
     x = year,
     y = gini_post_tax_fn1,
-    color = cluster
+    color = cluster, shape=cluster
   )
 ) +
   geom_ribbon(
@@ -708,18 +808,31 @@ ineq_dynamics_post <- pretty_up_ggplot(ineq_dynamics_post) +
     labels = scales::percent_format(accuracy = 1, scale = 1)
   ) +
   theme(
-    axis.title = element_blank()
+    axis.title = element_blank(), 
+    axis.text.x = element_text(angle = 25),
+    panel.grid.minor.x = element_blank()
   ) +
   scale_x_continuous(
     limits = gini_x_range,
     breaks = seq(1994, 2016, 2),
-    expand = expand_scale(mult = c(0, 0), add = c(0, 0.5))
+    expand = expansion(mult = c(0, 0), add = c(0, 10))
   ) +
-  scale_fill_manual(
-    limits = names(unlist(cluster_cols)),
-    values = c(unlist(cluster_cols)),
-    aesthetics = c("fill", "color")
-  )
+  ggrepel::geom_label_repel(
+    data = dplyr::filter(
+      macro_data_agg, year==(max(gini_x_range)-0)),
+    mapping = aes(
+      x = year,
+      y = gini_post_tax_fn1,
+      label = cluster_n), 
+    show.legend = FALSE, 
+    direction = "both", 
+    nudge_x = 9,
+    #nudge_y = 0.05,
+    force_pull = 0.25, force = 4,
+    max.time = 1.5, max.iter = 30000,
+    xlim = c(2010, 2026)
+  ) +
+  scale_color_grey(aesthetics = c("color", "fill")) 
 
 ineq_dynamics_post
 
@@ -727,12 +840,12 @@ ineq_dynamics_post
 full_ineq_dynamics_plot_post <- ggpubr::ggarrange(
   ineq_plot_overall, ineq_dynamics_post,
   ncol = 2, legend = "bottom", common.legend = TRUE,
-  labels = c("A)", "B)"),
+  labels = c("A)", "B)"), widths = c(1, 1.2),
   font.label = list(face = "bold")
 )
 
 ggsave(
   filename = here("output/fig_6_inquality-dynamics.pdf"),
-  plot = full_ineq_dynamics_plot_post,
-  height = fig_height, width = 1.2 * fig_width
+  plot = full_ineq_dynamics_plot_post, 
+  height = fig_height, width = 1.3 * fig_width
 )
